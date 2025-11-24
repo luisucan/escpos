@@ -1,0 +1,53 @@
+{
+  "name": "escpos",
+  "version": "1.0.0",
+  "description": "TypeScript library for ESC/POS thermal printer communication",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "prepublishOnly": "npm run clean && npm run build",
+    "test": "echo \"No tests specified yet\" && exit 0"
+  },
+  "keywords": [
+    "escpos",
+    "thermal-printer",
+    "printer",
+    "pos",
+    "receipt",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luisucan/escpos.git"
+  },
+  "bugs": {
+    "url": "https://github.com/luisucan/escpos/issues"
+  },
+  "homepage": "https://github.com/luisucan/escpos#readme",
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.47.0",
+    "@typescript-eslint/parser": "^8.47.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3"
+  }
+}
