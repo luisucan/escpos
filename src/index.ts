@@ -6,10 +6,13 @@
  * @packageDocumentation
  */
 
-export { EscPosPrinter, EscPosCommands } from './printer';
+import { EscPosFactory } from './core/EscPosFactory';
+
+export { EscPosCommands } from './core/EscPosCommands';
 
 // Export types
 export type Alignment = 'left' | 'center' | 'right';
 
 // Default export
-export { EscPosPrinter as default } from './printer';
+const printer = EscPosFactory.createMacOsUsbPrinter();
+export { printer };
