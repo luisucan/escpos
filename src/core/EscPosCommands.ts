@@ -49,7 +49,7 @@ export class EscPosCommands {
     return Buffer.from(content);
   }
 
-  static reset(): Buffer {
-    return Buffer.from([0x1B, 0x40]);
+  static reset(): number[] {
+    return [0x1B, 0x40];
   }
 }

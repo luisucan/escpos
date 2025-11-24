@@ -12,7 +12,7 @@ const page = {
   paperSize: '80',
   content: [
     {
-      text: 'Hello, ESC/POS Printer!',
+      text: 'Hello, ESC/POS Printer!\n',
     },
   ],
 } as EscPosPage;
