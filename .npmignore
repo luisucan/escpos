@@ -1,0 +1,24 @@
+# Source files
+src/
+tsconfig.json
+.prettierrc
+eslint.config.js
+
+# Development files
+examples/
+.github/
+
+# Tests
+*.test.ts
+*.spec.ts
+
+# Build tools
+.eslintcache
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
