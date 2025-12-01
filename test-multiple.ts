@@ -5,7 +5,7 @@
 import { EscPosPage } from './src/core/page/EscPosPage';
 import { printer } from './src/index';
 
-const testPrint = (number: number) => {
+const testPrint = async (number: number) => {
   const page = {
     printer: 'Printer_POS_80',
     printerType: 'USB',
@@ -27,19 +27,20 @@ const testPrint = (number: number) => {
   } as EscPosPage;
 
   console.log(`\n🖨️  Enviando impresión #${number}...`);
-  printer.print(page);
+  await printer.print(page);
 };
 
 // Realizar 3 impresiones con delay
 console.log('Iniciando prueba de impresiones múltiples...\n');
 
-testPrint(1);
-
-setTimeout(() => {
-  testPrint(2);
-}, 3000);
-
-setTimeout(() => {
-  testPrint(3);
-  console.log('\n✅ Todas las impresiones enviadas. Verifica tu impresora física.\n');
-}, 6000);
+(async () => {
+  await testPrint(1);
+  
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  await testPrint(2);
+  
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  await testPrint(3);
+  
+  console.log('\n\u2705 Todas las impresiones enviadas. Verifica tu impresora física.\n');
+})();

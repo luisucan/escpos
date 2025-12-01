@@ -57,4 +57,13 @@ export class EscPosCommands {
   static reset(): Buffer {
     return Buffer.from([0x1B, 0x40]);
   }
+
+  // Print raster bit image
+  static printImage(width: number, height: number): Buffer {
+    const widthLow = (width / 8) & 0xff;
+    const widthHigh = ((width / 8) >> 8) & 0xff;
+    const heightLow = height & 0xff;
+    const heightHigh = (height >> 8) & 0xff;
+    return Buffer.from([0x1D, 0x76, 0x30, 0x00, widthLow, widthHigh, heightLow, heightHigh]);
+  }
 }

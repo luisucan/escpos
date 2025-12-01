@@ -46,5 +46,5 @@ export interface EscPosPrinter {
    */
   clear(): this;
 
-  print(page: EscPosPage): void;
+  print(page: EscPosPage): Promise<void>;
 }

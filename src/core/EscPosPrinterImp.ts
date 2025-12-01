@@ -99,5 +99,5 @@ export abstract class EscPosPrinterImpl implements EscPosPrinter {
     return data;
   }*/
 
-  abstract print(page: EscPosPage): void
+  abstract print(page: EscPosPage): Promise<void>;
 }

@@ -8,7 +8,12 @@ export interface EscPosText {
     align?: 'left' | 'center' | 'right';
 }
 
-export type EscPosPaperSize = '58' | '80';
+export interface EscPosImage {
+    src: string;
+    type: 'local' | 'url';
+}
+
+export type EscPosPaperSize = 58 | 80;
 
 export enum EscPosPrinterType {
     USB = 'USB',
@@ -20,5 +25,5 @@ export interface EscPosPage {
     printer: string;
     printerType: EscPosPrinterType;
     paperSize: EscPosPaperSize;
-    content: EscPosText[];
+    content: (EscPosText | EscPosImage)[];
 }

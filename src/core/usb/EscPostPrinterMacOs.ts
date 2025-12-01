@@ -5,11 +5,11 @@ import { exec } from 'child_process';
 import { EscPosPageBuilder } from '../page/EscPosPageBuilder';
 
 export class EscPostPrinterMacOs extends EscPosPrinterImpl {
-  print(page: EscPosPage): void {
+  async print(page: EscPosPage): Promise<void> {
     try {
       console.log('Printing on MacOS USB printer MAC...', page);
 
-      const ESC_POS: Buffer = EscPosPageBuilder.build(page);
+      const ESC_POS: Buffer = await EscPosPageBuilder.build(page);
 
       const child = exec(`lp -o raw -d "${page.printer}"`, (err, stdout, stderr) => {
         if (err) {

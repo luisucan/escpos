@@ -9,8 +9,11 @@ import { printer } from './src/index';
 const page = {
   printer: 'Printer_POS_80',
   printerType: 'USB',
-  paperSize: '80',
+  paperSize: 80,
   content: [
+    {
+      src: './src/assets/img/logo_empresa.png',
+    },
     {
       text: 'Hello, ESC/POS Printer!\n',
     },
@@ -23,4 +26,7 @@ const page = {
   ],
 } as EscPosPage;
 
-printer.print(page);
+(async () => {
+  await printer.print(page);
+  console.log('\u2705 Print job completed');
+})();
