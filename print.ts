@@ -11,27 +11,39 @@ const page = {
   printerType: 'USB',
   paperSize: 80,
   content: [
-    {
+    /*{
       src: './src/assets/img/logo_empresa.png',
-    },
+    },*/
     {
-      text: 'Tienda "La Abejita Feliz" \n',
+      text: 'Tienda "La Abejita Feliz"',
       align: 'center',
     },
     {
-      text: 'This is a test print\n',
+      text: 'RFC: ABCD800101XYZ',
+      align: 'center',
     },
     {
-      text: `Date: ${new Date().toLocaleString()}\n`,
+      text: `Calle: conocido`,
+      align: 'center',
     },
     {
+      text: `Tel: 9991107140`,
+      align: 'center',
+    },
+    {
+      charLine: '=',
+    },
+    {
+      charLine: '*',
+    },
+    /*{
       barcodeContent: '123456789012',
       type: 'EAN13',
       height: 80,
       width: 2,
       textPosition: 'below',
       align: 'center',
-    },
+    },*/
     {
       qrContent: 'https://example.com/qr-code'
     }

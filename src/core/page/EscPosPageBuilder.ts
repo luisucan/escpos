@@ -1,5 +1,5 @@
 import { EscPosCommands } from '../EscPosCommands';
-import { EscPosBarcode, EscPosImage, EscPosPage, EscPosQrCode, EscPosText } from './EscPosPage';
+import { EscPosBarcode, EscPosImage, EscPosLineBreak, EscPosPage, EscPosQrCode, EscPosText } from './EscPosPage';
 
 import Jimp from 'jimp';
 import QRCode from 'qrcode';
@@ -7,11 +7,13 @@ import bwipjs from 'bwip-js';
 
 export class EscPosPageBuilder {
   private MAX_WIDTH;
+  private CHAR_WIDTH;
   private esc_pos: Buffer[];
 
   private constructor(page: EscPosPage) {
     this.esc_pos = [];
     this.MAX_WIDTH = page.paperSize === 80 ? 576 : 384;
+    this.CHAR_WIDTH = (page.paperSize === 80 ? 48 : 32);
   }
 
   private async addImage(itemImg: EscPosImage): Promise<void> {
@@ -198,8 +200,52 @@ export class EscPosPageBuilder {
   }
 
   private addText(itemText: EscPosText): void {
-    this.esc_pos.push(EscPosCommands.text(itemText.text));
-    // Remove extra line feed to reduce spacing
+    // Set alignment if specified
+    if (itemText.align) {
+      this.esc_pos.push(EscPosCommands.align(itemText.align));
+    }
+
+    // Set bold if specified
+    if (itemText.bold !== undefined) {
+      this.esc_pos.push(EscPosCommands.bold(itemText.bold));
+    }
+
+    // Set text size if specified
+    if (itemText.size) {
+      this.esc_pos.push(EscPosCommands.textSize(itemText.size.width, itemText.size.height));
+    }
+
+    // Add text
+    let text = itemText.text;
+    if (!text.endsWith('\n')) {
+      text += '\n';
+    }
+    this.esc_pos.push(EscPosCommands.text(text));
+
+    // Reset formatting to defaults
+    if (itemText.bold !== undefined) {
+      this.esc_pos.push(EscPosCommands.bold(false));
+    }
+    if (itemText.size) {
+      this.esc_pos.push(EscPosCommands.textSize(1, 1));
+    }
+    if (itemText.align) {
+      this.esc_pos.push(EscPosCommands.align('left'));
+    }
+  }
+
+  private async addLineBreak(itemBreak: EscPosLineBreak): Promise<void> {
+    const lines = itemBreak.lines || 1;
+    const char = itemBreak.charLine || ' ';
+
+    for (let i = 0; i < lines; i++) {
+      let line = '';
+      for (let j = 0; j < this.CHAR_WIDTH; j++) {
+        line += char;
+      }
+      line += '\n';
+      this.esc_pos.push(EscPosCommands.text(line));
+    }
   }
 
   private async initialize(page: EscPosPage): Promise<void> {
@@ -223,6 +269,10 @@ export class EscPosPageBuilder {
 
       if ('barcodeContent' in item) {
         await this.addBarcode(item);
+      }
+
+      if ('charLine' in item) {
+        await this.addLineBreak(item);
       }
     }
 

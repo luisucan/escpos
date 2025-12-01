@@ -20,6 +20,11 @@ export interface EscPosQrCode {
     errorLevel?: 'L' | 'M' | 'Q' | 'H';
 }
 
+export interface EscPosLineBreak  {
+    lines: number;
+    charLine: string;
+}
+
 export interface EscPosBarcode {
     barcodeContent: string;
     type: 'UPC-A' | 'UPC-E' | 'EAN13' | 'EAN8' | 'CODE39' | 'ITF' | 'CODABAR' | 'CODE93' | 'CODE128';
@@ -41,5 +46,5 @@ export interface EscPosPage {
     printer: string;
     printerType: EscPosPrinterType;
     paperSize: EscPosPaperSize;
-    content: (EscPosText | EscPosImage | EscPosQrCode | EscPosBarcode)[];
+    content: (EscPosText | EscPosImage | EscPosQrCode | EscPosBarcode | EscPosLineBreak)[];
 }
