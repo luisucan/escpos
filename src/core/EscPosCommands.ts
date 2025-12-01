@@ -26,6 +26,11 @@ export class EscPosCommands {
     return Buffer.from(`${this.GS}V${cutType}`);
   }
 
+  // Print and feed paper (forces buffer to print)
+  static printAndFeed(lines: number = 0): Buffer {
+    return Buffer.from(`${this.ESC}d${String.fromCharCode(lines)}`);
+  }
+
   // Set text alignment
   static align(alignment: 'left' | 'center' | 'right'): Buffer {
     const alignMap = { left: '\x00', center: '\x01', right: '\x02' };
@@ -49,7 +54,7 @@ export class EscPosCommands {
     return Buffer.from(content);
   }
 
-  static reset(): number[] {
-    return [0x1B, 0x40];
+  static reset(): Buffer {
+    return Buffer.from([0x1B, 0x40]);
   }
 }

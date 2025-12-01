@@ -1,10 +1,8 @@
 import { EscPosCommands } from '../EscPosCommands';
 import { EscPosPage, EscPosText } from './EscPosPage';
 
-type ItemEscPos = Buffer | number;
-
 export class EscPosPageBuilder {
-  private esc_pos: ItemEscPos[];
+  private esc_pos: Buffer[];
 
   private constructor(page: EscPosPage) {
     this.esc_pos = [];
@@ -17,7 +15,7 @@ export class EscPosPageBuilder {
   }
 
   private initialize(page: EscPosPage): void {
-    this.esc_pos.push(...EscPosCommands.reset());
+    this.esc_pos.push(EscPosCommands.initialize());
 
     // Initialize ESC/POS commands
     for (const item of page.content) {
@@ -28,13 +26,15 @@ export class EscPosPageBuilder {
       }
     }
 
+    // Force print buffer and feed paper before cutting
+    this.esc_pos.push(EscPosCommands.printAndFeed(5));
     this.esc_pos.push(EscPosCommands.cut());
   }
 
   static build(page: EscPosPage): Buffer {
     const builder = new EscPosPageBuilder(page);
 
-    const buffer = Buffer.concat(builder.esc_pos as any);
+    const buffer = Buffer.concat(builder.esc_pos);
     return buffer;
   }
 }

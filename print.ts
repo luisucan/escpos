@@ -14,6 +14,12 @@ const page = {
     {
       text: 'Hello, ESC/POS Printer!\n',
     },
+    {
+      text: 'This is a test print\n',
+    },
+    {
+      text: `Date: ${new Date().toLocaleString()}\n`,
+    },
   ],
 } as EscPosPage;
 
