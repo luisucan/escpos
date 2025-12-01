@@ -23,6 +23,9 @@ const page = {
     {
       text: `Date: ${new Date().toLocaleString()}\n`,
     },
+    {
+      qrContent: 'https://example.com/qr-code'
+    }
   ],
 } as EscPosPage;
 

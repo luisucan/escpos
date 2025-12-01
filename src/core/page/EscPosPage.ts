@@ -13,6 +13,13 @@ export interface EscPosImage {
     type: 'local' | 'url';
 }
 
+export interface EscPosQrCode {
+    qrContent: string;
+    alignment?: 'left' | 'center' | 'right';
+    size?: number;
+    errorLevel?: 'L' | 'M' | 'Q' | 'H';
+}
+
 export type EscPosPaperSize = 58 | 80;
 
 export enum EscPosPrinterType {
@@ -25,5 +32,5 @@ export interface EscPosPage {
     printer: string;
     printerType: EscPosPrinterType;
     paperSize: EscPosPaperSize;
-    content: (EscPosText | EscPosImage)[];
+    content: (EscPosText | EscPosImage | EscPosQrCode)[];
 }
