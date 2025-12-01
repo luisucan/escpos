@@ -1,7 +1,9 @@
 import { EscPosCommands } from '../EscPosCommands';
-import { EscPosImage, EscPosPage, EscPosQrCode, EscPosText } from './EscPosPage';
+import { EscPosBarcode, EscPosImage, EscPosPage, EscPosQrCode, EscPosText } from './EscPosPage';
 
 import Jimp from 'jimp';
+import QRCode from 'qrcode';
+import bwipjs from 'bwip-js';
 
 export class EscPosPageBuilder {
   private MAX_WIDTH;
@@ -50,29 +52,148 @@ export class EscPosPageBuilder {
     // No feed after image - let content flow immediately
   }
 
-  private addQrCode(qr: EscPosQrCode): void {
+  private async addQrCode(qr: EscPosQrCode): Promise<void> {
     // Set alignment (default center)
     const alignment = qr.alignment || 'center';
     this.esc_pos.push(EscPosCommands.align(alignment));
     
-    // Set QR code model (Model 2)
-    this.esc_pos.push(EscPosCommands.qrCodeModel());
-    
-    // Set QR code size (default 8, range 1-16)
-    const size = qr.size || 8;
-    this.esc_pos.push(EscPosCommands.qrCodeSize(size));
-    
-    // Set error correction level (default M)
-    const errorLevel = qr.errorLevel || 'M';
-    this.esc_pos.push(EscPosCommands.qrCodeErrorLevel(errorLevel));
-    
-    // Store QR code data
-    this.esc_pos.push(EscPosCommands.qrCodeData(qr.qrContent));
-    
-    // Print the QR code
-    this.esc_pos.push(EscPosCommands.qrCodePrint());
+    try {
+      // Generate QR code as image buffer
+      const size = (qr.size || 8) * 32; // Convert size to pixels
+      const qrImageBuffer = await QRCode.toBuffer(qr.qrContent, {
+        width: size,
+        margin: 1,
+        errorCorrectionLevel: qr.errorLevel || 'M',
+        type: 'png',
+      });
+      
+      // Load QR image with Jimp
+      const img = await Jimp.read(qrImageBuffer);
+      
+      // Ensure it fits the paper width
+      if (img.bitmap.width > this.MAX_WIDTH) {
+        img.resize(this.MAX_WIDTH, Jimp.AUTO);
+      }
+      
+      img.grayscale();
+      
+      const width = img.bitmap.width;
+      const height = img.bitmap.height;
+      
+      // Add image header command
+      this.esc_pos.push(EscPosCommands.printImage(width, height));
+      
+      const bytesPerLine = width / 8;
+      const imageData: number[] = [];
+      
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < bytesPerLine; x++) {
+          let byte = 0;
+      
+          for (let b = 0; b < 8; b++) {
+            const pixel = Jimp.intToRGBA(img.getPixelColor(x * 8 + b, y));
+            const lum = (pixel.r + pixel.g + pixel.b) / 3;
+      
+            byte = (byte << 1) | (lum < 128 ? 1 : 0);
+          }
+      
+          imageData.push(byte);
+        }
+      }
+      
+      // Add the image data as a buffer
+      this.esc_pos.push(Buffer.from(imageData));
+      
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      // Fallback: print QR content as text if image generation fails
+      this.esc_pos.push(EscPosCommands.text(`QR: ${qr.qrContent}\n`));
+    }
     
     // Reset alignment to left after QR code
+    this.esc_pos.push(EscPosCommands.align('left'));
+  }
+
+  private async addBarcode(itemBarcode: EscPosBarcode): Promise<void> {
+    // Set alignment (default center)
+    const alignment = itemBarcode.align || 'center';
+    this.esc_pos.push(EscPosCommands.align(alignment));
+
+    try {
+      // Map barcode types to bwip-js symbology names
+      const barcodeTypeMap: { [key: string]: string } = {
+        'UPC-A': 'upca',
+        'UPC-E': 'upce',
+        'EAN13': 'ean13',
+        'EAN8': 'ean8',
+        'CODE39': 'code39',
+        'ITF': 'interleaved2of5',
+        'CODABAR': 'codabar',
+        'CODE93': 'code93',
+        'CODE128': 'code128',
+      };
+
+      const barcodeType = barcodeTypeMap[itemBarcode.type] || 'code128';
+      const height = itemBarcode.height || 162;
+      const width = itemBarcode.width || 3;
+
+      // Generate barcode as PNG buffer
+      const barcodeBuffer = await bwipjs.toBuffer({
+        bcid: barcodeType,
+        text: itemBarcode.barcodeContent,
+        scale: width,
+        height: Math.floor(height / 10), // Convert dots to mm approximation
+        includetext: itemBarcode.textPosition !== 'none',
+        textxalign: 'center',
+      });
+
+      // Load barcode image with Jimp
+      const img = await Jimp.read(barcodeBuffer);
+
+      // Ensure it fits the paper width
+      if (img.bitmap.width > this.MAX_WIDTH) {
+        img.resize(this.MAX_WIDTH, Jimp.AUTO);
+      }
+
+      img.grayscale();
+
+      const imgWidth = img.bitmap.width;
+      const imgHeight = img.bitmap.height;
+
+      // Add image header command
+      this.esc_pos.push(EscPosCommands.printImage(imgWidth, imgHeight));
+
+      const bytesPerLine = imgWidth / 8;
+      const imageData: number[] = [];
+
+      for (let y = 0; y < imgHeight; y++) {
+        for (let x = 0; x < bytesPerLine; x++) {
+          let byte = 0;
+
+          for (let b = 0; b < 8; b++) {
+            const pixel = Jimp.intToRGBA(img.getPixelColor(x * 8 + b, y));
+            const lum = (pixel.r + pixel.g + pixel.b) / 3;
+
+            // Inverted logic: white (255) = 0, black (0) = 1
+            byte = (byte << 1) | (lum > 128 ? 0 : 1);
+          }
+
+          imageData.push(byte);
+        }
+      }
+
+      // Add the image data as a buffer
+      this.esc_pos.push(Buffer.from(imageData));
+
+      // Add line feed after barcode
+      this.esc_pos.push(EscPosCommands.lineFeed(1));
+    } catch (error) {
+      console.error('Error generating barcode:', error);
+      // Fallback: print barcode content as text if image generation fails
+      this.esc_pos.push(EscPosCommands.text(`Barcode: ${itemBarcode.barcodeContent}\n`));
+    }
+
+    // Reset alignment to left after barcode
     this.esc_pos.push(EscPosCommands.align('left'));
   }
 
@@ -97,7 +218,11 @@ export class EscPosPageBuilder {
       }
 
       if ('qrContent' in item) {
-        this.addQrCode(item);
+        await this.addQrCode(item);
+      }
+
+      if ('barcodeContent' in item) {
+        await this.addBarcode(item);
       }
     }
 

@@ -20,6 +20,15 @@ export interface EscPosQrCode {
     errorLevel?: 'L' | 'M' | 'Q' | 'H';
 }
 
+export interface EscPosBarcode {
+    barcodeContent: string;
+    type: 'UPC-A' | 'UPC-E' | 'EAN13' | 'EAN8' | 'CODE39' | 'ITF' | 'CODABAR' | 'CODE93' | 'CODE128';
+    height?: number;
+    width?: number;
+    textPosition?: 'none' | 'above' | 'below' | 'both';
+    align?: 'left' | 'center' | 'right';
+}
+
 export type EscPosPaperSize = 58 | 80;
 
 export enum EscPosPrinterType {
@@ -32,5 +41,5 @@ export interface EscPosPage {
     printer: string;
     printerType: EscPosPrinterType;
     paperSize: EscPosPaperSize;
-    content: (EscPosText | EscPosImage | EscPosQrCode)[];
+    content: (EscPosText | EscPosImage | EscPosQrCode | EscPosBarcode)[];
 }

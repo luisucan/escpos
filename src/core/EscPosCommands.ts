@@ -98,4 +98,60 @@ export class EscPosCommands {
     // Print stored QR code
     return Buffer.from([0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30]);
   }
+
+  // Barcode commands
+  static barcodeHeight(height: number = 162): Buffer {
+    // Set barcode height (default 162 dots)
+    return Buffer.from([0x1D, 0x68, height]);
+  }
+
+  static barcodeWidth(width: number = 3): Buffer {
+    // Set barcode width (2-6, default 3)
+    return Buffer.from([0x1D, 0x77, width]);
+  }
+
+  static barcodeTextPosition(position: 'none' | 'above' | 'below' | 'both' = 'below'): Buffer {
+    // Set HRI character print position
+    const positions = { none: 0x00, above: 0x01, below: 0x02, both: 0x03 };
+    return Buffer.from([0x1D, 0x48, positions[position]]);
+  }
+
+  static barcodeFont(font: 'A' | 'B' = 'A'): Buffer {
+    // Set HRI character font
+    const fonts = { A: 0x00, B: 0x01 };
+    return Buffer.from([0x1D, 0x66, fonts[font]]);
+  }
+
+  static barcodePrint(type: string, data: string): Buffer {
+    // Barcode types mapping
+    const barcodeTypes: { [key: string]: number } = {
+      'UPC-A': 0x00,
+      'UPC-E': 0x01,
+      'EAN13': 0x02,
+      'EAN8': 0x03,
+      'CODE39': 0x04,
+      'ITF': 0x05,
+      'CODABAR': 0x06,
+      'CODE93': 0x48,
+      'CODE128': 0x49,
+    };
+
+    const barcodeType = barcodeTypes[type] || 0x49; // Default to CODE128
+    const dataBuffer = Buffer.from(data, 'ascii');
+    
+    // GS k m n d1...dn (for types 0-6)
+    // GS k m d1...dn NUL (for types 65+)
+    if (barcodeType < 0x41) {
+      return Buffer.concat([
+        Buffer.from([0x1D, 0x6B, barcodeType, dataBuffer.length]),
+        dataBuffer,
+      ]);
+    } else {
+      return Buffer.concat([
+        Buffer.from([0x1D, 0x6B, barcodeType]),
+        dataBuffer,
+        Buffer.from([0x00]), // NULL terminator
+      ]);
+    }
+  }
 }

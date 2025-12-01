@@ -15,13 +15,22 @@ const page = {
       src: './src/assets/img/logo_empresa.png',
     },
     {
-      text: 'Hello, ESC/POS Printer!\n',
+      text: 'Tienda "La Abejita Feliz" \n',
+      align: 'center',
     },
     {
       text: 'This is a test print\n',
     },
     {
       text: `Date: ${new Date().toLocaleString()}\n`,
+    },
+    {
+      barcodeContent: '123456789012',
+      type: 'EAN13',
+      height: 80,
+      width: 2,
+      textPosition: 'below',
+      align: 'center',
     },
     {
       qrContent: 'https://example.com/qr-code'
