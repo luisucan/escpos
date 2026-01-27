@@ -198,7 +198,7 @@ async function main() {
   esc([0x1B, 0x40]); // Reset
   esc([0x1B, 0x61, 0x01]); // Center
 
-  await printImage("assets/logo.jpeg");
+  await printImage("src/assets/img/logo_empresa.png");
 
   print("TIENDA VILLASOFT\n");
   print("RFC: ABCD800101XYZ\n");

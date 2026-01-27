@@ -11,9 +11,9 @@ const page = {
   printerType: 'USB',
   paperSize: 80,
   content: [
-    /*{
+    {
       src: './src/assets/img/logo_empresa.png',
-    },*/
+    },
     {
       text: 'Tienda "La Abejita Feliz"',
       align: 'center',
