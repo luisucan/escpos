@@ -1,8 +1,9 @@
 {
-  "name": "escpos",
-  "version": "1.0.0",
+  "name": "@luisvillafania/escpos",
+  "version": "1.0.1",
   "description": "TypeScript library for ESC/POS thermal printer communication",
   "main": "dist/index.js",
+  "private": false,
   "types": "dist/index.d.ts",
   "files": [
     "dist",

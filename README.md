@@ -1,139 +1,128 @@
-# ESC/POS Thermal Printer Library
+# ESC/POS Thermal Printer (macOS)
 
-A TypeScript library for communicating with ESC/POS thermal printers. This library provides an easy-to-use API for generating print commands for receipt printers, POS printers, and other thermal printing devices.
+Documentacion rapida para imprimir en macOS usando esta libreria.
 
-## Features
+## Requisitos
 
-- ✨ Written in TypeScript with full type definitions
-- 🎯 Simple, chainable API
-- 📦 Zero dependencies
-- 🔧 Support for common ESC/POS commands
-- 💪 Works with Node.js 14+
+- macOS con CUPS disponible.
+- Impresora instalada en el sistema (nombre visible en CUPS).
+- Node.js >= 14.
 
-## Installation
+## Instalacion
 
 ```bash
-npm install escpos
+npm i @luisvillafania/escpos
 ```
 
-## Usage
+## Ejemplo rapido (macOS USB)
 
-### Basic Example
+Este ejemplo esta basado en `print.ts` y usa el printer por defecto que crea
+`EscPosFactory.createMacOsUsbPrinter()`.
 
-```typescript
-import { EscPosPrinter } from 'escpos';
+```ts
+import { EscPosPage } from './src/core/page/EscPosPage';
+import { printer } from './src/index';
 
-const printer = new EscPosPrinter();
+const page = {
+  printer: 'Printer_POS_80',
+  printerType: 'USB',
+  paperSize: 80,
+  content: [
+    {
+      src: './src/assets/img/logo_empresa.png',
+    },
+    {
+      text: 'Tienda "La Abejita Feliz"',
+      align: 'center',
+    },
+    {
+      text: 'RFC: ABCD800101XYZ',
+      align: 'center',
+    },
+    {
+      text: 'Calle: conocido',
+      align: 'center',
+    },
+    {
+      text: 'Tel: 9991107140',
+      align: 'center',
+    },
+    {
+      charLine: '=',
+    },
+    {
+      charLine: '*',
+    },
+    {
+      qrContent: 'https://example.com/qr-code',
+    },
+  ],
+} as EscPosPage;
 
-// Create a simple receipt
-printer
-  .initialize()
-  .align('center')
-  .bold(true)
-  .size(2, 2)
-  .text('MY STORE')
-  .feed(1)
-  .bold(false)
-  .size(1, 1)
-  .text('123 Main Street')
-  .feed(2)
-  .align('left')
-  .text('Item 1.................. $10.00')
-  .feed(1)
-  .text('Item 2.................. $15.00')
-  .feed(1)
-  .text('--------------------------------')
-  .feed(1)
-  .align('right')
-  .bold(true)
-  .text('TOTAL: $25.00')
-  .feed(3)
-  .cut();
-
-// Get the buffer to send to printer
-const buffer = printer.getBuffer();
-
-// Send to printer (example with a writable stream)
-await printer.print(printerStream);
+(async () => {
+  await printer.print(page);
+  console.log('✅ Print job completed');
+})();
 ```
 
-### CommonJS
+## Como ejecutar
 
-```javascript
-const { EscPosPrinter } = require('escpos');
-
-const printer = new EscPosPrinter();
-printer
-  .initialize()
-  .text('Hello World')
-  .feed(2)
-  .cut();
-
-const buffer = printer.getBuffer();
-```
-
-## API Reference
-
-### EscPosPrinter
-
-The main printer class with a chainable API.
-
-#### Methods
-
-- `initialize()` - Initialize the printer
-- `text(content: string)` - Print text
-- `feed(lines?: number)` - Feed paper (default: 1 line)
-- `align(alignment: 'left' | 'center' | 'right')` - Set text alignment
-- `bold(enabled?: boolean)` - Set bold text (default: true)
-- `size(width?: number, height?: number)` - Set text size (1-8, default: 1)
-- `cut(partial?: boolean)` - Cut paper (default: full cut)
-- `getBuffer()` - Get the complete print buffer
-- `clear()` - Clear the buffer
-- `print(stream?: NodeJS.WritableStream)` - Print to stream or get buffer
-
-### EscPosCommands
-
-Low-level ESC/POS command generators if you need more control.
-
-## Examples
-
-Check the `examples/` directory for more usage examples:
-
-```bash
-node examples/basic.js
-```
-
-## Development
-
-### Build
+### Opcion A: compilar y ejecutar
 
 ```bash
 npm run build
+node dist/print.js
 ```
 
-### Lint
+### Opcion B: ejecutar TypeScript directo
+
+Instala `tsx` o `ts-node` y ejecuta:
+
+```bash
+npx tsx print.ts
+```
+
+## Como elegir la impresora
+
+El campo `printer` debe coincidir con el nombre de la impresora en CUPS.
+
+Para ver las impresoras instaladas:
+
+```bash
+lpstat -p
+```
+
+Usa ese nombre exacto en `page.printer`.
+
+## Estructura del contenido
+
+`content` acepta una lista de elementos. Los mas usados:
+
+- Texto:
+  - `text`, `align`, `bold`, `size`
+- Imagen:
+  - `src` (local o URL)
+- QR:
+  - `qrContent`, `size`, `errorLevel`, `alignment`
+- Linea:
+  - `charLine`, `lines`
+- Codigo de barras:
+  - `barcodeContent`, `type`, `height`, `width`, `textPosition`, `align`
+
+## Notas
+
+- La impresion en macOS se hace via `lp` con `-o raw`.
+- Si el QR o el codigo de barras fallan, se imprime texto de respaldo.
+- La libreria usa `Jimp`, `qrcode` y `bwip-js` para generar imagenes.
+
+## Desarrollo
 
 ```bash
 npm run lint
-```
-
-### Format
-
-```bash
 npm run format
+npm test
 ```
 
-## Publishing to NPM
-
-1. Update version in `package.json`
-2. Build the project: `npm run build`
-3. Publish: `npm publish`
-
-## License
+## Licencia
 
 MIT
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
