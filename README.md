@@ -8,6 +8,10 @@ Documentacion rapida para imprimir en macOS usando esta libreria.
 - Impresora instalada en el sistema (nombre visible en CUPS).
 - Node.js >= 14.
 
+# Activar cups en mac
+
+cupsctl WebInterface=yes
+
 ## Instalacion
 
 ```bash
