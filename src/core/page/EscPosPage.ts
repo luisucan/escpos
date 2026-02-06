@@ -11,6 +11,7 @@ export interface EscPosText {
 export interface EscPosImage {
     src: string;
     type: 'local' | 'url';
+    threshold?: number; // 0–255
 }
 
 export interface EscPostCut {

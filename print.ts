@@ -14,7 +14,7 @@ const page = {
     {
       src: './src/assets/img/logo_empresa.png',
     },
-    {
+    /*{
       text: 'Tienda "La Abejita Feliz"',
       align: 'center',
     },
@@ -41,7 +41,7 @@ const page = {
     },
     {
       charLine: '*',
-    },
+    },*/
     /*{
       barcodeContent: '123456789012',
       type: 'EAN13',
@@ -50,9 +50,9 @@ const page = {
       textPosition: 'below',
       align: 'center',
     },*/
-    {
+    /*{
       qrContent: 'https://example.com/qr-code'
-    }
+    }*/
   ],
 } as EscPosPage;
 

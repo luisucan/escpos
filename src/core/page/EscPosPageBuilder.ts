@@ -16,7 +16,7 @@ export class EscPosPageBuilder {
     this.CHAR_WIDTH = (page.paperSize === 80 ? 48 : 32);
   }
 
-  private async addImage(itemImg: EscPosImage): Promise<void> {
+  /*private async addImage(itemImg: EscPosImage): Promise<void> {
     let img: Jimp;
 
     img = await Jimp.read(itemImg.src as string);
@@ -30,7 +30,7 @@ export class EscPosPageBuilder {
     // Add image header command
     this.esc_pos.push(EscPosCommands.printImage(width, height));
 
-    const bytesPerLine = width / 8;
+    const   = width / 8;
     const imageData: number[] = [];
 
     for (let y = 0; y < height; y++) {
@@ -52,13 +52,53 @@ export class EscPosPageBuilder {
     this.esc_pos.push(Buffer.from(imageData));
 
     // No feed after image - let content flow immediately
+  }*/
+
+  private async addImage(itemImg: EscPosImage): Promise<void> {
+    const threshold = itemImg.threshold ?? 160;
+
+    const img = await Jimp.read(itemImg.src as string);
+
+    img.resize(this.MAX_WIDTH, Jimp.AUTO);
+    img.grayscale().contrast(0.5);
+
+    const width = img.bitmap.width;
+    const height = img.bitmap.height;
+    const bytesPerLine = Math.ceil(width / 8);
+
+    this.esc_pos.push(
+      EscPosCommands.printImage(bytesPerLine, height)
+    );
+
+    const imageData: number[] = [];
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < bytesPerLine; x++) {
+        let byte = 0;
+
+        for (let b = 0; b < 8; b++) {
+          const px = x * 8 + b;
+          if (px < width) {
+            const pixel = Jimp.intToRGBA(img.getPixelColor(px, y));
+            const lum = (pixel.r + pixel.g + pixel.b) / 3;
+            byte = (byte << 1) | (lum < threshold ? 1 : 0);
+          } else {
+            byte = byte << 1;
+          }
+        }
+
+        imageData.push(byte);
+      }
+    }
+
+    this.esc_pos.push(Buffer.from(imageData));
   }
 
   private async addQrCode(qr: EscPosQrCode): Promise<void> {
     // Set alignment (default center)
     const alignment = qr.alignment || 'center';
     this.esc_pos.push(EscPosCommands.align(alignment));
-    
+
     try {
       // Generate QR code as image buffer
       const size = (qr.size || 8) * 32; // Convert size to pixels
@@ -68,50 +108,50 @@ export class EscPosPageBuilder {
         errorCorrectionLevel: qr.errorLevel || 'M',
         type: 'png',
       });
-      
+
       // Load QR image with Jimp
       const img = await Jimp.read(qrImageBuffer);
-      
+
       // Ensure it fits the paper width
       if (img.bitmap.width > this.MAX_WIDTH) {
         img.resize(this.MAX_WIDTH, Jimp.AUTO);
       }
-      
+
       img.grayscale();
-      
+
       const width = img.bitmap.width;
       const height = img.bitmap.height;
-      
+
       // Add image header command
       this.esc_pos.push(EscPosCommands.printImage(width, height));
-      
+
       const bytesPerLine = width / 8;
       const imageData: number[] = [];
-      
+
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < bytesPerLine; x++) {
           let byte = 0;
-      
+
           for (let b = 0; b < 8; b++) {
             const pixel = Jimp.intToRGBA(img.getPixelColor(x * 8 + b, y));
             const lum = (pixel.r + pixel.g + pixel.b) / 3;
-      
+
             byte = (byte << 1) | (lum < 128 ? 1 : 0);
           }
-      
+
           imageData.push(byte);
         }
       }
-      
+
       // Add the image data as a buffer
       this.esc_pos.push(Buffer.from(imageData));
-      
+
     } catch (error) {
       console.error('Error generating QR code:', error);
       // Fallback: print QR content as text if image generation fails
       this.esc_pos.push(EscPosCommands.text(`QR: ${qr.qrContent}\n`));
     }
-    
+
     // Reset alignment to left after QR code
     this.esc_pos.push(EscPosCommands.align('left'));
   }
