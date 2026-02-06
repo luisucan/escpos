@@ -276,7 +276,7 @@ export class EscPosPageBuilder {
       }
 
       if ('cut' in item && item.cut) {
-        this.esc_pos.push(EscPosCommands.printAndFeed(2));
+        this.esc_pos.push(EscPosCommands.printAndFeed(item.feedLines || 5));
         this.esc_pos.push(EscPosCommands.cut());
       }
 

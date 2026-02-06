@@ -15,6 +15,7 @@ export interface EscPosImage {
 
 export interface EscPostCut {
     cut: boolean;
+    feedLines?: number;
 }
 
 export interface EscPosOpenDrawer {
@@ -54,5 +55,5 @@ export interface EscPosPage {
     printer: string;
     printerType: EscPosPrinterType;
     paperSize: EscPosPaperSize;
-    content: (EscPosText | EscPosImage | EscPosQrCode | EscPosBarcode | EscPosLineBreak)[];
+    content: (EscPosText | EscPosImage | EscPosQrCode | EscPosBarcode | EscPosLineBreak | EscPostCut | EscPosOpenDrawer)[];
 }
