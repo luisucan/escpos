@@ -274,11 +274,24 @@ export class EscPosPageBuilder {
       if ('charLine' in item) {
         await this.addLineBreak(item);
       }
+
+      if ('cut' in item && item.cut) {
+        this.esc_pos.push(EscPosCommands.printAndFeed(2));
+        this.esc_pos.push(EscPosCommands.cut());
+      }
+
+      if ('openDrawer' in item && item.openDrawer) {
+        this.esc_pos.push(EscPosCommands.openDrawer());
+      }
     }
 
-    // Reduce feed before cutting from 5 to 2 lines
-    this.esc_pos.push(EscPosCommands.printAndFeed(5));
-    this.esc_pos.push(EscPosCommands.cut());
+    //if last item is not cut, add a cut at the end
+    const lastItem = page.content[page.content.length - 1];
+    if (!('cut' in lastItem) || (('cut' in lastItem) && !lastItem.cut)) {
+      // Reduce feed before cutting from 5 to 2 lines
+      this.esc_pos.push(EscPosCommands.printAndFeed(5));
+      this.esc_pos.push(EscPosCommands.cut());
+    }
   }
 
   static async build(page: EscPosPage): Promise<Buffer> {

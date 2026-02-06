@@ -14,5 +14,5 @@ export { EscPosCommands } from './core/EscPosCommands';
 export type Alignment = 'left' | 'center' | 'right';
 
 // Default export
-const printer = EscPosFactory.createMacOsUsbPrinter();
+const printer = EscPosFactory.createOsUsbPrinter();
 export { printer };

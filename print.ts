@@ -19,6 +19,12 @@ const page = {
       align: 'center',
     },
     {
+      cut: true,
+    },
+    {
+      openDrawer: true,
+    },
+    {
       text: 'RFC: ABCD800101XYZ',
       align: 'center',
     },

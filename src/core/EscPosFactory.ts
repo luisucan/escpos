@@ -3,7 +3,7 @@ import { EscPosPrinter } from './EscPostPrinter';
 import { EscPostPrinterMacOs } from './usb/EscPostPrinterMacOs';
 
 export class EscPosFactory {
-  static createMacOsUsbPrinter(): EscPosPrinter {
+  static createOsUsbPrinter(): EscPosPrinter {
     console.log('Platform:', os.platform());
     console.log('Type:', os.type());
     console.log('Release:', os.release());

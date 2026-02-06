@@ -13,6 +13,14 @@ export interface EscPosImage {
     type: 'local' | 'url';
 }
 
+export interface EscPostCut {
+    cut: boolean;
+}
+
+export interface EscPosOpenDrawer {
+    openDrawer: boolean;
+}
+
 export interface EscPosQrCode {
     qrContent: string;
     alignment?: 'left' | 'center' | 'right';

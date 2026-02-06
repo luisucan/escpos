@@ -26,6 +26,10 @@ export class EscPosCommands {
     return Buffer.from(`${this.GS}V${cutType}`);
   }
 
+  static openDrawer(): Buffer {
+    return Buffer.from([0x1B, 0x70, 0x00, 0x19, 0xFA]);
+  }
+
   // Print and feed paper (forces buffer to print)
   static printAndFeed(lines: number = 0): Buffer {
     return Buffer.from(`${this.ESC}d${String.fromCharCode(lines)}`);
@@ -138,7 +142,7 @@ export class EscPosCommands {
 
     const barcodeType = barcodeTypes[type] || 0x49; // Default to CODE128
     const dataBuffer = Buffer.from(data, 'ascii');
-    
+
     // GS k m n d1...dn (for types 0-6)
     // GS k m d1...dn NUL (for types 65+)
     if (barcodeType < 0x41) {
