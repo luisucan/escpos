@@ -1,5 +1,5 @@
-import { EscPosCommands } from "../src/core/EscPosCommands";
-
+import { EscPosCommands } from '../src/core/EscPosCommands';
+import iconv from 'iconv-lite';
 
 describe('EscPosCommands', () => {
   describe('Control Characters', () => {
@@ -145,8 +145,12 @@ describe('EscPosCommands', () => {
     });
 
     test('should handle special characters', () => {
-      const result = EscPosCommands.text('¡Hola! ñ á é í ó ú');
-      expect(result.toString()).toBe('¡Hola! ñ á é í ó ú');
+      const text = '¡Hola! ñ á é í ó ú Á É Í Ó Ú Ñ Ü ü';
+      const result = EscPosCommands.text(text);
+
+      // Text is encoded using CP437 for ESC/POS compatibility.
+      const expected = iconv.encode(text, 'cp437');
+      expect(Buffer.compare(result, expected)).toBe(0);
     });
 
     test('should handle numbers', () => {

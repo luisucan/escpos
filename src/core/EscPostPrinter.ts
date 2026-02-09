@@ -1,3 +1,4 @@
+import { PrinterInfo } from "./interfaces/PrinterInfo";
 import { EscPosPage } from "./page/EscPosPage";
 
 export interface EscPosPrinter {
@@ -47,4 +48,5 @@ export interface EscPosPrinter {
   clear(): this;
 
   print(page: EscPosPage): Promise<void>;
+  getListPrinters(): Promise<PrinterInfo[]>;
 }

@@ -3,11 +3,11 @@
  * Use this file to test your printer implementation
  */
 
-import { EscPosPage } from './src/core/page/EscPosPage';
-import { printer } from './src/index';
+import { EscPosPage } from '../src/core/page/EscPosPage';
+import { printer } from '../src/index';
 
 const page = {
-  printer: 'Printer_POS_80',
+  printer: 'POS-80C',
   printerType: 'USB',
   paperSize: 80,
   content: [
@@ -17,7 +17,7 @@ const page = {
     {
       text: 'Tienda "La Abejita Feliz año á"',
       align: 'center',
-    },/*
+    },
     {
       cut: true,
     },
@@ -41,7 +41,7 @@ const page = {
     },
     {
       charLine: '*',
-    },*/
+    },
     /*{
       barcodeContent: '123456789012',
       type: 'EAN13',
@@ -50,9 +50,9 @@ const page = {
       textPosition: 'below',
       align: 'center',
     },*/
-    /*{
+    {
       qrContent: 'https://example.com/qr-code'
-    }*/
+    }
   ],
 } as EscPosPage;
 
