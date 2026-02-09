@@ -1,16 +1,12 @@
-# ESC/POS Thermal Printer (macOS)
+# ESC/POS Thermal Printer (macOS / Windows / Linux)
 
-Documentacion rapida para imprimir en macOS usando esta libreria.
+Libreria TypeScript para generar comandos ESC/POS e imprimir en impresoras termicas usando el spooler del sistema.
 
-## Requisitos
+Funciona asi:
 
-- macOS con CUPS disponible.
-- Impresora instalada en el sistema (nombre visible en CUPS).
-- Node.js >= 14.
-
-# Activar cups en mac
-
-cupsctl WebInterface=yes
+- Tu defines un `EscPosPage` (texto, imagen, QR, barcode, cortes, etc.).
+- `EscPosPageBuilder` lo convierte a un `Buffer` ESC/POS.
+- El driver por OS envia el buffer en modo RAW.
 
 ## Instalacion
 
@@ -18,113 +14,128 @@ cupsctl WebInterface=yes
 npm i @luisvillafania/escpos
 ```
 
-## Ejemplo rapido (macOS USB)
-
-Este ejemplo esta basado en `print.ts` y usa el printer por defecto que crea
-`EscPosFactory.createMacOsUsbPrinter()`.
+## Ejemplo rapido (Windows / macOS / Linux)
 
 ```ts
-import { EscPosPage } from './src/core/page/EscPosPage';
-import { printer } from './src/index';
+import { EscPosPrinterType, type EscPosPage, printer } from '@luisvillafania/escpos';
 
-const page = {
-  printer: 'Printer_POS_80',
-  printerType: 'USB',
+const page: EscPosPage = {
+  printer: 'POS-80C',
+  printerType: EscPosPrinterType.USB,
   paperSize: 80,
+
+  // Opcional: tabla de caracteres (ESC t n). Default: 0 (CP437)
+  // Si tu firmware usa otra tabla, prueba con 2 (CP850)
+  codeTable: 0,
+
   content: [
-    {
-      src: './src/assets/img/logo_empresa.png',
-    },
-    {
-      text: 'Tienda "La Abejita Feliz"',
-      align: 'center',
-    },
-    {
-      text: 'RFC: ABCD800101XYZ',
-      align: 'center',
-    },
-    {
-      text: 'Calle: conocido',
-      align: 'center',
-    },
-    {
-      text: 'Tel: 9991107140',
-      align: 'center',
-    },
-    {
-      charLine: '=',
-    },
-    {
-      charLine: '*',
-    },
-    {
-      qrContent: 'https://example.com/qr-code',
-    },
+    { text: 'Tienda "La Abejita Feliz"', align: 'center' },
+    { text: 'Prueba: ÁÉÍÓÚ áéíóú Ññ Üü', align: 'center' },
+    { charLine: '=' },
+    { text: 'Gracias por su compra' },
+    { cut: true },
   ],
-} as EscPosPage;
+};
 
 (async () => {
   await printer.print(page);
-  console.log('✅ Print job completed');
+  console.log('Print job completed');
 })();
 ```
 
-## Como ejecutar
+## Listar impresoras instaladas
 
-### Opcion A: compilar y ejecutar
+Con la libreria:
 
-```bash
-npm run build
-node dist/print.js
+```ts
+import { printer } from '@luisvillafania/escpos';
+
+(async () => {
+  const printers = await printer.getListPrinters();
+  console.log(printers);
+})();
 ```
 
-### Opcion B: ejecutar TypeScript directo
+Desde el sistema:
 
-Instala `tsx` o `ts-node` y ejecuta:
+- macOS/Linux (CUPS): `lpstat -p`
+- Windows (PowerShell): `Get-CimInstance Win32_Printer | Select-Object -ExpandProperty Name`
+
+## Windows
+
+### Requisitos
+
+- Windows 10/11
+- Servicio "Print Spooler" habilitado
+- PowerShell disponible
+
+### Como imprime en Windows
+
+La implementacion `EscPosPrinterWindowsOs` manda el buffer ESC/POS como RAW al spooler usando Win32 (`OpenPrinter/StartDocPrinter/WritePrinter`) desde PowerShell.
+
+Recomendaciones:
+
+- Para impresoras ESC/POS, suele funcionar mejor un driver tipo `Generic / Text Only` o un driver ESC/POS que soporte RAW.
+- Si ves "letras" al imprimir una imagen, normalmente es porque el driver esta renderizando o el comando de imagen no coincide con el modo esperado.
+
+## macOS / Linux (CUPS)
+
+### Requisitos
+
+- CUPS disponible
+- Impresora instalada en el sistema
+
+Activar interfaz web en macOS (opcional):
 
 ```bash
-npx tsx print.ts
+cupsctl WebInterface=yes
 ```
 
-## Como elegir la impresora
+### Como imprime en macOS / Linux
 
-El campo `printer` debe coincidir con el nombre de la impresora en CUPS.
+La implementacion `EscPosPrinterMacOs` usa `lp -o raw -d "<printer>"` y envia el `Buffer` por stdin.
 
-Para ver las impresoras instaladas:
+## Acentos y caracteres especiales
 
-```bash
-lpstat -p
-```
+Por defecto, el texto se codifica en `CP437` (1 byte por caracter) y el builder envia `ESC t 0` al inicio.
 
-Usa ese nombre exacto en `page.printer`.
+Si tu firmware no corresponde a CP437, cambia `codeTable`:
 
-## Estructura del contenido
+- `codeTable: 2` suele ser `CP850` (comun en ES/LatAm)
+
+## Estructura de `content`
 
 `content` acepta una lista de elementos. Los mas usados:
 
-- Texto:
-  - `text`, `align`, `bold`, `size`
-- Imagen:
-  - `src` (local o URL)
-- QR:
-  - `qrContent`, `size`, `errorLevel`, `alignment`
-- Linea:
-  - `charLine`, `lines`
-- Codigo de barras:
-  - `barcodeContent`, `type`, `height`, `width`, `textPosition`, `align`
+- Texto: `text`, `align`, `bold`, `size`
+- Imagen: `src`, `type`, `threshold`
+- QR: `qrContent`, `size`, `errorLevel`, `alignment`
+- Linea: `charLine`, `lines`
+- Codigo de barras: `barcodeContent`, `type`, `height`, `width`, `textPosition`, `align`
+- Corte / feed: `cut`, `feedLines`
+- Cajon: `openDrawer`
 
-## Notas
+## Clases involucradas (arquitectura)
 
-- La impresion en macOS se hace via `lp` con `-o raw`.
-- Si el QR o el codigo de barras fallan, se imprime texto de respaldo.
-- La libreria usa `Jimp`, `qrcode` y `bwip-js` para generar imagenes.
+- `EscPosFactory`
+  - Detecta el OS (`process.platform`) y crea el printer correspondiente.
+- `EscPosPrinterImpl`
+  - Base para impresoras; define la API (`print`, `getListPrinters`) y helpers de buffer.
+- `EscPosPrinterMacOs`
+  - Driver CUPS: `lp` para imprimir y `lpstat` para listar impresoras.
+- `EscPosPrinterWindowsOs`
+  - Driver Windows: lista con PowerShell/WMI y imprime RAW via Win32 spooler.
+- `EscPosPageBuilder`
+  - Convierte un `EscPosPage` (lista de items) a un `Buffer` ESC/POS (imagenes, texto, QR, barcode, cortes).
+- `EscPosCommands`
+  - Primitivas ESC/POS (initialize, align, bold, image header, QR/barcode, select code table, etc.).
 
 ## Desarrollo
 
 ```bash
 npm run lint
 npm run format
-npm test
+npm run build
 ```
 
 ## Licencia
