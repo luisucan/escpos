@@ -14,10 +14,10 @@ const page = {
     {
       src: './src/assets/img/logo_empresa.png',
     },
-    /*{
-      text: 'Tienda "La Abejita Feliz"',
+    {
+      text: 'Tienda "La Abejita Feliz año á"',
       align: 'center',
-    },
+    },/*
     {
       cut: true,
     },

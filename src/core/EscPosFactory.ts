@@ -1,6 +1,7 @@
 import os from 'os';
 import { EscPosPrinter } from './EscPostPrinter';
-import { EscPostPrinterMacOs } from './usb/EscPostPrinterMacOs';
+import { EscPosPrinterMacOs } from './usb/EscPosPrinterMacOs';
+import { EscPosPrinterWindowsOs } from './usb/EscPosPrinterWindowsOs';
 
 export class EscPosFactory {
   static createOsUsbPrinter(): EscPosPrinter {
@@ -10,8 +11,11 @@ export class EscPosFactory {
 
     switch (os.platform()) {
       case 'darwin':
-        const print = new EscPostPrinterMacOs();
-        return print;
+        return new EscPosPrinterMacOs();
+      case 'win32':
+        return new EscPosPrinterWindowsOs();
+      case 'linux':
+        throw new Error(`Unsupported platform: ${os.platform()}`);
       default:
         throw new Error(`Unsupported platform: ${os.platform()}`);
     }

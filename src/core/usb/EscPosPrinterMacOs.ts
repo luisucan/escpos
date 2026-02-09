@@ -1,10 +1,11 @@
 import { EscPosPrinterImpl } from '../EscPosPrinterImp';
 import { EscPosPage } from '../page/EscPosPage';
 
-import { exec } from 'child_process';
+import { exec, execFile } from 'child_process';
 import { EscPosPageBuilder } from '../page/EscPosPageBuilder';
+import { PrinterInfo } from '../interfaces/PrinterInfo';
 
-export class EscPostPrinterMacOs extends EscPosPrinterImpl {
+export class EscPosPrinterMacOs extends EscPosPrinterImpl {
   async print(page: EscPosPage): Promise<void> {
     try {
       console.log('Printing on MacOS USB printer MAC...', page);
@@ -35,5 +36,30 @@ export class EscPostPrinterMacOs extends EscPosPrinterImpl {
     } catch (error) {
       console.error('ERROR en el proceso de impresión:', error);
     }
+  }
+
+  async getListPrinters(): Promise<PrinterInfo[]>{
+    return new Promise((resolve, reject)=>{
+      execFile('lpstat', ['-p'], (error, stdout)=>{
+        if(error){
+          reject(error)
+          return
+        }
+
+        resolve(this.parseLpstatOutput(stdout))
+      })
+    })
+  }
+
+  private parseLpstatOutput(output: string): PrinterInfo[] {
+    return output
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith('printer '))
+      .map((line) => {
+        const parts = line.split(' ')
+        return { name: parts[1] ?? '' }
+      })
+      .filter((printer) => printer.name.length > 0)
   }
 }

@@ -1,5 +1,6 @@
 import { EscPosCommands } from "./EscPosCommands";
 import { EscPosPrinter } from "./EscPostPrinter";
+import { PrinterInfo } from "./interfaces/PrinterInfo";
 import { EscPosPage } from "./page/EscPosPage";
 
 
@@ -100,4 +101,5 @@ export abstract class EscPosPrinterImpl implements EscPosPrinter {
   }*/
 
   abstract print(page: EscPosPage): Promise<void>;
+  abstract getListPrinters(): Promise<PrinterInfo[]>;
 }
