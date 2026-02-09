@@ -1,4 +1,6 @@
 import { printer } from '../src/index';
 
-const printers = printer.getListPrinters();
-console.log(printers);
+(async () => {
+  const printers = await printer.getListPrinters();
+  console.log(printers);
+})();

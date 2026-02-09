@@ -15,7 +15,8 @@ export class EscPosFactory {
       case 'win32':
         return new EscPosPrinterWindowsOs();
       case 'linux':
-        throw new Error(`Unsupported platform: ${os.platform()}`);
+        // Most Linux distros use CUPS; the macOS implementation relies on `lp`/`lpstat`.
+        return new EscPosPrinterMacOs();
       default:
         throw new Error(`Unsupported platform: ${os.platform()}`);
     }
