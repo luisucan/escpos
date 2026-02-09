@@ -1,5 +1,12 @@
 import { EscPosCommands } from '../EscPosCommands';
-import { EscPosBarcode, EscPosImage, EscPosLineBreak, EscPosPage, EscPosQrCode, EscPosText } from './EscPosPage';
+import {
+  EscPosBarcode,
+  EscPosImage,
+  EscPosLineBreak,
+  EscPosPage,
+  EscPosQrCode,
+  EscPosText,
+} from './EscPosPage';
 
 import Jimp from 'jimp';
 import QRCode from 'qrcode';
@@ -13,7 +20,7 @@ export class EscPosPageBuilder {
   private constructor(page: EscPosPage) {
     this.esc_pos = [];
     this.MAX_WIDTH = page.paperSize === 80 ? 576 : 384;
-    this.CHAR_WIDTH = (page.paperSize === 80 ? 48 : 32);
+    this.CHAR_WIDTH = page.paperSize === 80 ? 48 : 32;
   }
 
   /*private async addImage(itemImg: EscPosImage): Promise<void> {
@@ -66,9 +73,7 @@ export class EscPosPageBuilder {
     const height = img.bitmap.height;
     const bytesPerLine = Math.ceil(width / 8);
 
-    this.esc_pos.push(
-      EscPosCommands.printImage(bytesPerLine, height)
-    );
+    this.esc_pos.push(EscPosCommands.printImage(bytesPerLine, height));
 
     const imageData: number[] = [];
 
@@ -145,7 +150,6 @@ export class EscPosPageBuilder {
 
       // Add the image data as a buffer
       this.esc_pos.push(Buffer.from(imageData));
-
     } catch (error) {
       console.error('Error generating QR code:', error);
       // Fallback: print QR content as text if image generation fails
@@ -166,13 +170,13 @@ export class EscPosPageBuilder {
       const barcodeTypeMap: { [key: string]: string } = {
         'UPC-A': 'upca',
         'UPC-E': 'upce',
-        'EAN13': 'ean13',
-        'EAN8': 'ean8',
-        'CODE39': 'code39',
-        'ITF': 'interleaved2of5',
-        'CODABAR': 'codabar',
-        'CODE93': 'code93',
-        'CODE128': 'code128',
+        EAN13: 'ean13',
+        EAN8: 'ean8',
+        CODE39: 'code39',
+        ITF: 'interleaved2of5',
+        CODABAR: 'codabar',
+        CODE93: 'code93',
+        CODE128: 'code128',
       };
 
       const barcodeType = barcodeTypeMap[itemBarcode.type] || 'code128';
@@ -291,6 +295,10 @@ export class EscPosPageBuilder {
   private async initialize(page: EscPosPage): Promise<void> {
     // No initialize command to avoid spacing at the start
 
+    // Default to CP437 for Spanish accents (\u00d1/\u00f1, \u00dc/\u00fc, \u00c1...)
+    // and general printer compatibility.
+    this.esc_pos.push(EscPosCommands.selectCodeTable(page.codeTable ?? 0));
+
     // Initialize ESC/POS commands
     for (const item of page.content) {
       // Process each item in the page content
@@ -327,7 +335,7 @@ export class EscPosPageBuilder {
 
     //if last item is not cut, add a cut at the end
     const lastItem = page.content[page.content.length - 1];
-    if (!('cut' in lastItem) || (('cut' in lastItem) && !lastItem.cut)) {
+    if (!('cut' in lastItem) || ('cut' in lastItem && !lastItem.cut)) {
       // Reduce feed before cutting from 5 to 2 lines
       this.esc_pos.push(EscPosCommands.printAndFeed(5));
       this.esc_pos.push(EscPosCommands.cut());
