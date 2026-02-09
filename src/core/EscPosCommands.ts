@@ -73,9 +73,10 @@ export class EscPosCommands {
   }
 
   // Print raster bit image
-  static printImage(width: number, height: number): Buffer {
-    const widthLow = (width / 8) & 0xff;
-    const widthHigh = ((width / 8) >> 8) & 0xff;
+  // Note: for GS v 0, width is expressed in bytes (dots/8) per line.
+  static printImage(bytesPerLine: number, height: number): Buffer {
+    const widthLow = bytesPerLine & 0xff;
+    const widthHigh = (bytesPerLine >> 8) & 0xff;
     const heightLow = height & 0xff;
     const heightHigh = (height >> 8) & 0xff;
     return Buffer.from([0x1d, 0x76, 0x30, 0x00, widthLow, widthHigh, heightLow, heightHigh]);

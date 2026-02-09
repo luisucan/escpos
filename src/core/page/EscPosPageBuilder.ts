@@ -126,11 +126,10 @@ export class EscPosPageBuilder {
 
       const width = img.bitmap.width;
       const height = img.bitmap.height;
+      const bytesPerLine = Math.ceil(width / 8);
 
       // Add image header command
-      this.esc_pos.push(EscPosCommands.printImage(width, height));
-
-      const bytesPerLine = width / 8;
+      this.esc_pos.push(EscPosCommands.printImage(bytesPerLine, height));
       const imageData: number[] = [];
 
       for (let y = 0; y < height; y++) {
@@ -138,10 +137,14 @@ export class EscPosPageBuilder {
           let byte = 0;
 
           for (let b = 0; b < 8; b++) {
-            const pixel = Jimp.intToRGBA(img.getPixelColor(x * 8 + b, y));
-            const lum = (pixel.r + pixel.g + pixel.b) / 3;
-
-            byte = (byte << 1) | (lum < 128 ? 1 : 0);
+            const px = x * 8 + b;
+            if (px < width) {
+              const pixel = Jimp.intToRGBA(img.getPixelColor(px, y));
+              const lum = (pixel.r + pixel.g + pixel.b) / 3;
+              byte = (byte << 1) | (lum < 128 ? 1 : 0);
+            } else {
+              byte = byte << 1;
+            }
           }
 
           imageData.push(byte);
@@ -205,11 +208,10 @@ export class EscPosPageBuilder {
 
       const imgWidth = img.bitmap.width;
       const imgHeight = img.bitmap.height;
+      const bytesPerLine = Math.ceil(imgWidth / 8);
 
       // Add image header command
-      this.esc_pos.push(EscPosCommands.printImage(imgWidth, imgHeight));
-
-      const bytesPerLine = imgWidth / 8;
+      this.esc_pos.push(EscPosCommands.printImage(bytesPerLine, imgHeight));
       const imageData: number[] = [];
 
       for (let y = 0; y < imgHeight; y++) {
@@ -217,11 +219,16 @@ export class EscPosPageBuilder {
           let byte = 0;
 
           for (let b = 0; b < 8; b++) {
-            const pixel = Jimp.intToRGBA(img.getPixelColor(x * 8 + b, y));
-            const lum = (pixel.r + pixel.g + pixel.b) / 3;
+            const px = x * 8 + b;
+            if (px < imgWidth) {
+              const pixel = Jimp.intToRGBA(img.getPixelColor(px, y));
+              const lum = (pixel.r + pixel.g + pixel.b) / 3;
 
-            // Inverted logic: white (255) = 0, black (0) = 1
-            byte = (byte << 1) | (lum > 128 ? 0 : 1);
+              // Inverted logic: white (255) = 0, black (0) = 1
+              byte = (byte << 1) | (lum > 128 ? 0 : 1);
+            } else {
+              byte = byte << 1;
+            }
           }
 
           imageData.push(byte);

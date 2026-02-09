@@ -11,9 +11,9 @@ const page = {
   printerType: 'USB',
   paperSize: 80,
   content: [
-    /*{
+    {
       src: './src/assets/img/logo_empresa.png',
-    },*/
+    },
     {
       text: 'Tienda "La Abejita Feliz año á"',
       align: 'center',
@@ -50,9 +50,9 @@ const page = {
       textPosition: 'below',
       align: 'center',
     },*/
-    /*{
+    {
       qrContent: 'https://example.com/qr-code'
-    }*/
+    }
   ],
 } as EscPosPage;
 
