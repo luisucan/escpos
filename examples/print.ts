@@ -71,14 +71,14 @@ const page = {
         ],
       ],
     },
-    {
+    /*{
       barcodeContent: '123456789012',
       type: 'EAN13',
       height: 80,
       width: 2,
       textPosition: 'below',
       align: 'center',
-    },
+    },*/
     {
       qrContent: 'https://example.com/qr-code',
     },
