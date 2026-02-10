@@ -21,6 +21,8 @@ export type {
   EscPosPage,
   EscPosPaperSize,
   EscPosQrCode,
+  EscPosTable,
+  EscPosTableCell,
   EscPosText,
 } from './core/page/EscPosPage';
 export { EscPosPrinterType } from './core/page/EscPosPage';
