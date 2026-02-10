@@ -5,7 +5,7 @@ Libreria en TypeScript para generar y enviar comandos ESC/POS a impresoras termi
 ## Instalacion
 
 ```bash
-npm install escpos
+npm i @luisvillafania/escpos
 ```
 
 ## Uso rapido

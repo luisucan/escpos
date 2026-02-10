@@ -56,7 +56,7 @@ const page = {
       rows: [
         [
           {
-            text: 'Coca-Cola 500ml que fue comprada en la tienda el año pasado por avión',
+            text: 'Coca-Cola 500ml',
             align: 'left',
           },
           { text: '2', align: 'center' },
@@ -69,7 +69,7 @@ const page = {
         ],
         [
           {
-            text: 'Café con leche la lechera sin azúcar procesada por las empresas grandes del mundo',
+            text: 'Café con leche',
             align: 'left',
           },
           { text: '1', align: 'center' },
