@@ -433,11 +433,13 @@ export class EscPosPageBuilder {
     const widths = this.getTableColumnWidths(table, columnCount);
     const defaultAlign = table.align || 'left';
     const lineChar = table.lineChar && table.lineChar.length > 0 ? table.lineChar[0] : '-';
+    const rowSpacing = table.rowSpacing ?? 1;
+    const footerLine = table.footerLine ?? true;
 
     this.esc_pos.push(EscPosCommands.align('left'));
 
     if (header.length > 0) {
-      const headerBold = header.some((cell) => cell?.bold);
+      const headerBold = table.headerBold ?? header.some((cell) => cell?.bold);
       this.esc_pos.push(EscPosCommands.bold(headerBold));
 
       const headerLines = this.buildTableRowLines(header, widths, defaultAlign);
@@ -461,6 +463,15 @@ export class EscPosPageBuilder {
       }
 
       this.esc_pos.push(EscPosCommands.bold(false));
+
+      if (rowSpacing > 0) {
+        this.esc_pos.push(EscPosCommands.lineFeed(rowSpacing));
+      }
+    }
+
+    if (footerLine) {
+      const separator = lineChar.repeat(this.CHAR_WIDTH);
+      this.esc_pos.push(EscPosCommands.text(`${separator}\n`));
     }
 
     this.esc_pos.push(EscPosCommands.align('left'));

@@ -80,8 +80,11 @@ export interface EscPosPage {
 
 export interface EscPosTable {
   header?: EscPosTableCell[];
+  headerBold?: boolean;
   rows: EscPosTableCell[][];
   columnWidths?: number[];
   lineChar?: string;
   align?: 'left' | 'center' | 'right';
+  rowSpacing?: number;
+  footerLine?: boolean;
 }

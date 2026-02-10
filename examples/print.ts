@@ -48,11 +48,17 @@ const page = {
         { text: 'Cant', align: 'center' },
         { text: 'Precio', align: 'right' },
       ],
+      headerBold: true,
       columnWidths: [60, 20, 20],
       lineChar: '-',
+      rowSpacing: 1,
+      footerLine: true,
       rows: [
         [
-          { text: 'Coca-Cola 500ml que fue comprada en la tienda el año pasado por avión', align: 'left' },
+          {
+            text: 'Coca-Cola 500ml que fue comprada en la tienda el año pasado por avión',
+            align: 'left',
+          },
           { text: '2', align: 'center' },
           { text: '$20.00', align: 'right' },
         ],
