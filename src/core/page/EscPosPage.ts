@@ -44,6 +44,12 @@ export interface EscPosBarcode {
   align?: 'left' | 'center' | 'right';
 }
 
+export interface EscPosTableCell {
+  text: string;
+  align?: 'left' | 'center' | 'right';
+  bold?: boolean;
+}
+
 export type EscPosPaperSize = 58 | 80;
 
 export enum EscPosPrinterType {
@@ -68,5 +74,14 @@ export interface EscPosPage {
     | EscPosLineBreak
     | EscPostCut
     | EscPosOpenDrawer
+    | EscPosTable
   )[];
+}
+
+export interface EscPosTable {
+  header?: EscPosTableCell[];
+  rows: EscPosTableCell[][];
+  columnWidths?: number[];
+  lineChar?: string;
+  align?: 'left' | 'center' | 'right';
 }

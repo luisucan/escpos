@@ -5,6 +5,8 @@ import {
   EscPosLineBreak,
   EscPosPage,
   EscPosQrCode,
+  EscPosTable,
+  EscPosTableCell,
   EscPosText,
 } from './EscPosPage';
 
@@ -21,6 +23,126 @@ export class EscPosPageBuilder {
     this.esc_pos = [];
     this.MAX_WIDTH = page.paperSize === 80 ? 576 : 384;
     this.CHAR_WIDTH = page.paperSize === 80 ? 48 : 32;
+  }
+
+  private normalizePercentages(percentages: number[]): number[] {
+    const sum = percentages.reduce((acc, value) => acc + value, 0);
+    if (sum <= 0) {
+      return [];
+    }
+    return percentages.map((value) => (value / sum) * 100);
+  }
+
+  private defaultTablePercents(columnCount: number): number[] {
+    if (columnCount === 3) {
+      return [60, 20, 20];
+    }
+    return Array.from({ length: columnCount }, () => 100 / columnCount);
+  }
+
+  private getTableColumnWidths(table: EscPosTable, columnCount: number): number[] {
+    const totalWidth = this.CHAR_WIDTH;
+    let percents = table.columnWidths ? table.columnWidths.slice(0, columnCount) : [];
+
+    if (percents.length < columnCount) {
+      const sum = percents.reduce((acc, value) => acc + value, 0);
+      const remaining = Math.max(0, 100 - sum);
+      const fill =
+        columnCount - percents.length > 0 ? remaining / (columnCount - percents.length) : 0;
+      while (percents.length < columnCount) {
+        percents.push(fill || 1);
+      }
+    }
+
+    if (percents.length === 0 || percents.every((value) => value <= 0)) {
+      percents = this.defaultTablePercents(columnCount);
+    }
+
+    const normalized = this.normalizePercentages(percents);
+    const normalizedPercents =
+      normalized.length > 0 ? normalized : this.defaultTablePercents(columnCount);
+    const widths = normalizedPercents.map((percent) =>
+      Math.max(1, Math.floor((totalWidth * percent) / 100))
+    );
+
+    const widthSum = widths.reduce((acc, value) => acc + value, 0);
+    const remainder = totalWidth - widthSum;
+    if (remainder !== 0) {
+      widths[widths.length - 1] = Math.max(1, widths[widths.length - 1] + remainder);
+    }
+
+    return widths;
+  }
+
+  private wrapText(text: string, width: number): string[] {
+    if (width <= 0) {
+      return [''];
+    }
+    const normalized = text.replace(/\r/g, '');
+    const segments = normalized.split('\n');
+    const lines: string[] = [];
+
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i];
+      if (!segment) {
+        lines.push('');
+        continue;
+      }
+      for (let start = 0; start < segment.length; start += width) {
+        lines.push(segment.slice(start, start + width));
+      }
+      if (i < segments.length - 1) {
+        lines.push('');
+      }
+    }
+
+    return lines.length > 0 ? lines : [''];
+  }
+
+  private formatCell(text: string, width: number, align: 'left' | 'center' | 'right'): string {
+    const truncated = text.length > width ? text.slice(0, width) : text;
+    const padding = Math.max(0, width - truncated.length);
+
+    switch (align) {
+      case 'right':
+        return ' '.repeat(padding) + truncated;
+      case 'center': {
+        const leftPad = Math.floor(padding / 2);
+        const rightPad = padding - leftPad;
+        return ' '.repeat(leftPad) + truncated + ' '.repeat(rightPad);
+      }
+      default:
+        return truncated + ' '.repeat(padding);
+    }
+  }
+
+  private buildTableRowLines(
+    cells: EscPosTableCell[],
+    widths: number[],
+    defaultAlign: 'left' | 'center' | 'right'
+  ): string[] {
+    const columnCount = widths.length;
+    const safeCells = Array.from(
+      { length: columnCount },
+      (_, index) => cells[index] || { text: '' }
+    );
+    const firstCellLines = this.wrapText(safeCells[0]?.text ?? '', widths[0]);
+    const totalLines = Math.max(1, firstCellLines.length);
+    const lines: string[] = [];
+
+    for (let lineIndex = 0; lineIndex < totalLines; lineIndex++) {
+      let line = '';
+      for (let colIndex = 0; colIndex < columnCount; colIndex++) {
+        const cell = safeCells[colIndex] || { text: '' };
+        const align = cell.align || defaultAlign;
+        const cellText =
+          colIndex === 0 ? firstCellLines[lineIndex] || '' : lineIndex === 0 ? cell.text || '' : '';
+        line += this.formatCell(cellText, widths[colIndex], align);
+      }
+      lines.push(line);
+    }
+
+    return lines;
   }
 
   /*private async addImage(itemImg: EscPosImage): Promise<void> {
@@ -299,6 +421,51 @@ export class EscPosPageBuilder {
     }
   }
 
+  private addTable(table: EscPosTable): void {
+    const header = table.header || [];
+    const rows = table.rows || [];
+    const columnCount = Math.max(header.length, rows[0]?.length || 0);
+
+    if (columnCount === 0) {
+      return;
+    }
+
+    const widths = this.getTableColumnWidths(table, columnCount);
+    const defaultAlign = table.align || 'left';
+    const lineChar = table.lineChar && table.lineChar.length > 0 ? table.lineChar[0] : '-';
+
+    this.esc_pos.push(EscPosCommands.align('left'));
+
+    if (header.length > 0) {
+      const headerBold = header.some((cell) => cell?.bold);
+      this.esc_pos.push(EscPosCommands.bold(headerBold));
+
+      const headerLines = this.buildTableRowLines(header, widths, defaultAlign);
+      for (const line of headerLines) {
+        this.esc_pos.push(EscPosCommands.text(`${line}\n`));
+      }
+
+      this.esc_pos.push(EscPosCommands.bold(false));
+
+      const separator = lineChar.repeat(this.CHAR_WIDTH);
+      this.esc_pos.push(EscPosCommands.text(`${separator}\n`));
+    }
+
+    for (const row of rows) {
+      const rowBold = row.some((cell) => cell?.bold);
+      this.esc_pos.push(EscPosCommands.bold(rowBold));
+
+      const rowLines = this.buildTableRowLines(row, widths, defaultAlign);
+      for (const line of rowLines) {
+        this.esc_pos.push(EscPosCommands.text(`${line}\n`));
+      }
+
+      this.esc_pos.push(EscPosCommands.bold(false));
+    }
+
+    this.esc_pos.push(EscPosCommands.align('left'));
+  }
+
   private async initialize(page: EscPosPage): Promise<void> {
     // No initialize command to avoid spacing at the start
 
@@ -324,6 +491,10 @@ export class EscPosPageBuilder {
 
       if ('barcodeContent' in item) {
         await this.addBarcode(item);
+      }
+
+      if ('rows' in item) {
+        this.addTable(item as EscPosTable);
       }
 
       if ('charLine' in item) {
