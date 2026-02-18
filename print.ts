@@ -17,7 +17,7 @@ const page = {
     {
       text: 'Tienda "La Abejita Feliz año á"',
       align: 'center',
-    },/*
+    },
     {
       cut: true,
     },
@@ -41,18 +41,7 @@ const page = {
     },
     {
       charLine: '*',
-    },*/
-    /*{
-      barcodeContent: '123456789012',
-      type: 'EAN13',
-      height: 80,
-      width: 2,
-      textPosition: 'below',
-      align: 'center',
-    },*/
-    /*{
-      qrContent: 'https://example.com/qr-code'
-    }*/
+    },
   ],
 } as EscPosPage;
 
