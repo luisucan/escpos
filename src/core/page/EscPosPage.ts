@@ -12,6 +12,9 @@ export interface EscPosImage {
   src: string;
   type: 'local' | 'url';
   threshold?: number; // 0–255
+  width?: number;    // pixels; defaults to full paper width
+  height?: number;   // pixels; defaults to auto (proportional)
+  align?: 'left' | 'center' | 'right';
 }
 
 export interface EscPostCut {

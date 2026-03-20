@@ -1,14 +1,14 @@
 # ESC/POS Thermal Printer Library
 
-Libreria en TypeScript para generar y enviar comandos ESC/POS a impresoras termicas.
+TypeScript library for generating and sending ESC/POS commands to thermal printers.
 
-## Instalacion
+## Installation
 
 ```bash
 npm i @luisvillafania/escpos
 ```
 
-## Uso rapido
+## Quick start
 
 ```ts
 import { EscPosPage, EscPosPrinterType, printer } from 'escpos';
@@ -18,9 +18,9 @@ const page: EscPosPage = {
   printerType: EscPosPrinterType.USB,
   paperSize: 80,
   content: [
-    { text: 'Hola mundo', align: 'center', bold: true },
+    { text: 'Hello world', align: 'center', bold: true },
     { charLine: '-' },
-    { text: 'Gracias por su compra' },
+    { text: 'Thank you for your purchase' },
   ],
 };
 
@@ -29,19 +29,19 @@ const page: EscPosPage = {
 })();
 ```
 
-## Uso en macOS (CUPS)
+## Usage on macOS (CUPS)
 
-Esta libreria usa `lp -o raw` para enviar bytes ESC/POS.
+This library uses `lp -o raw` to send ESC/POS bytes.
 
-1. Lista impresoras instaladas:
+1. List installed printers:
 
 ```bash
 lpstat -p
 ```
 
-2. Usa el nombre exacto en `page.printer`.
+2. Use the exact name in `page.printer`.
 
-Ejemplo rapido (macOS):
+Quick example (macOS):
 
 ```ts
 import { EscPosPage, EscPosPrinterType, printer } from 'escpos';
@@ -50,45 +50,42 @@ const page: EscPosPage = {
   printer: 'Printer_POS_80',
   printerType: EscPosPrinterType.USB,
   paperSize: 80,
-  content: [{ text: 'Ticket macOS', bold: true }, { charLine: '-' }, { text: 'CUPS RAW OK' }],
+  content: [{ text: 'macOS Ticket', bold: true }, { charLine: '-' }, { text: 'CUPS RAW OK' }],
 };
 
 (async () => {
   const printers = await printer.getListPrinters();
   console.log(
-    'Disponibles:',
+    'Available:',
     printers.map((p) => p.name)
   );
   await printer.print(page);
 })();
 ```
 
-## Uso en Windows
+## Usage on Windows
 
-La implementacion usa PowerShell para enviar RAW al spooler.
+The implementation uses PowerShell to send RAW data to the spooler.
 
-1. Lista impresoras:
+1. List printers:
 
 ```powershell
 Get-CimInstance Win32_Printer | Select-Object -ExpandProperty Name
 ```
 
-Fallback (equipos viejos):
+Fallback (older systems):
 
 ```powershell
 wmic printer get name
 ```
 
-## Uso en Linux
+## Usage on Linux
 
-Por el momento **no esta probado en Linux**. La libreria esta enfocada en impresion
-por interfaz **USB** y los adaptadores para red/serial no estan soportados aun.
+At the moment **Linux is not tested**. The library is focused on printing via **USB** interface and network/serial adapters are not supported yet.
 
-Nota: Linux normalmente usa CUPS (como macOS), pero esta libreria no ha sido
-validada en distribuciones Linux. Si decides probarlo, usa los nombres de impresora
-de `lpstat -p` y considera que el soporte es experimental.
+Note: Linux typically uses CUPS (like macOS), but this library has not been validated on Linux distributions. If you decide to try it, use the printer names from `lpstat -p` and be aware that support is experimental.
 
-Ejemplo rapido (Windows):
+Quick example (Windows):
 
 ```ts
 import { EscPosPage, EscPosPrinterType, printer } from 'escpos';
@@ -98,117 +95,120 @@ const page: EscPosPage = {
   printerType: EscPosPrinterType.USB,
   paperSize: 80,
   content: [
-    { text: 'Ticket de prueba', bold: true },
+    { text: 'Test ticket', bold: true },
     { charLine: '-' },
-    { text: 'Impresion RAW OK' },
+    { text: 'RAW print OK' },
   ],
 };
 
 (async () => {
   const printers = await printer.getListPrinters();
   console.log(
-    'Disponibles:',
+    'Available:',
     printers.map((p) => p.name)
   );
   await printer.print(page);
 })();
 ```
 
-## Estructura de una pagina (`EscPosPage`)
+## Page structure (`EscPosPage`)
 
-- `printer`: string, nombre de la impresora (CUPS o Windows).
+- `printer`: string, printer name (CUPS or Windows).
 - `printerType`: `USB | NETWORK | SERIAL`.
 - `paperSize`: `58 | 80` (mm).
-- `codeTable`: number (opcional). Default `0` (CP437).
-- `content`: array de elementos a imprimir (ver abajo).
+- `codeTable`: number (optional). Default `0` (CP437).
+- `content`: array of elements to print (see below).
 
-## Elementos disponibles en `content`
+## Available elements in `content`
 
-### Texto (`EscPosText`)
+### Text (`EscPosText`)
 
-Imprime texto plano.
+Prints plain text.
 
-Propiedades:
+Properties:
 
-- `text` (string): contenido.
-- `bold` (boolean): negritas.
-- `size` ({ width, height }): escala de 1 a 8.
+- `text` (string): content.
+- `bold` (boolean): bold formatting.
+- `size` ({ width, height }): scale from 1 to 8.
 - `align` ('left' | 'center' | 'right').
 
-### Imagen (`EscPosImage`)
+### Image (`EscPosImage`)
 
-Convierte una imagen a ESC/POS raster.
+Converts an image to ESC/POS raster format.
 
-Propiedades:
+Properties:
 
-- `src` (string): ruta local o URL.
+- `src` (string): local path or URL.
 - `type` ('local' | 'url').
-- `threshold` (number): 0-255, menor valor = mas oscuro.
+- `threshold` (number): 0–255, lower value = darker.
+- `width` (number): target width in pixels (default: full paper width).
+- `height` (number): target height in pixels (default: auto/proportional).
+- `align` ('left' | 'center' | 'right'): horizontal alignment when image is narrower than the paper.
 
-### QR (`EscPosQrCode`)
+### QR Code (`EscPosQrCode`)
 
-Genera un QR como imagen e imprime.
+Generates a QR code as an image and prints it.
 
-Propiedades:
+Properties:
 
-- `qrContent` (string): texto o URL.
+- `qrContent` (string): text or URL.
 - `alignment` ('left' | 'center' | 'right').
-- `size` (number): escala (default 8).
+- `size` (number): scale (default 8).
 - `errorLevel` ('L' | 'M' | 'Q' | 'H').
 
-### Codigo de barras (`EscPosBarcode`)
+### Barcode (`EscPosBarcode`)
 
-Genera un barcode con `bwip-js` y lo imprime como imagen.
+Generates a barcode with `bwip-js` and prints it as an image.
 
-Propiedades:
+Properties:
 
-- `barcodeContent` (string): datos.
+- `barcodeContent` (string): data.
 - `type` ('UPC-A' | 'UPC-E' | 'EAN13' | 'EAN8' | 'CODE39' | 'ITF' | 'CODABAR' | 'CODE93' | 'CODE128').
-- `height` (number): altura en puntos (default 162).
-- `width` (number): ancho relativo (default 3).
+- `height` (number): height in dots (default 162).
+- `width` (number): relative width (default 3).
 - `textPosition` ('none' | 'above' | 'below' | 'both').
 - `align` ('left' | 'center' | 'right').
 
-### Linea separadora (`EscPosLineBreak`)
+### Separator line (`EscPosLineBreak`)
 
-Imprime una o varias lineas con un caracter repetido.
+Prints one or more lines with a repeated character.
 
-Propiedades:
+Properties:
 
-- `lines` (number): numero de lineas.
-- `charLine` (string): caracter a repetir.
+- `lines` (number): number of lines.
+- `charLine` (string): character to repeat.
 
-### Corte (`EscPostCut`)
+### Cut (`EscPostCut`)
 
-Corta el papel con ESC/POS.
+Cuts the paper using ESC/POS.
 
-Propiedades:
+Properties:
 
-- `cut` (boolean): true para cortar.
-- `feedLines` (number): lineas antes del corte (si aplica).
+- `cut` (boolean): true to cut.
+- `feedLines` (number): lines before the cut (if applicable).
 
-### Abrir gaveta (`EscPosOpenDrawer`)
+### Open drawer (`EscPosOpenDrawer`)
 
-Envía el comando para abrir gaveta.
+Sends the command to open the cash drawer.
 
-Propiedades:
+Properties:
 
 - `openDrawer` (boolean).
 
-### Tabla (`EscPosTable`)
+### Table (`EscPosTable`)
 
-Imprime filas con columnas alineadas.
+Prints rows with aligned columns.
 
-Propiedades:
+Properties:
 
-- `header` (EscPosTableCell[]): cabecera opcional.
-- `headerBold` (boolean): fuerza negritas en el header.
-- `rows` (EscPosTableCell[][]): filas.
-- `columnWidths` (number[]): porcentajes por columna, se normalizan automaticamente.
-- `lineChar` (string): caracter del separador (default `-`).
-- `align` ('left' | 'center' | 'right'): alineacion default.
-- `rowSpacing` (number): lineas en blanco entre filas (default 1).
-- `footerLine` (boolean): linea final para cerrar la tabla (default true).
+- `header` (EscPosTableCell[]): optional header row.
+- `headerBold` (boolean): forces bold on the header.
+- `rows` (EscPosTableCell[][]): data rows.
+- `columnWidths` (number[]): percentages per column, automatically normalized.
+- `lineChar` (string): separator character (default `-`).
+- `align` ('left' | 'center' | 'right'): default alignment.
+- `rowSpacing` (number): blank lines between rows (default 1).
+- `footerLine` (boolean): closing line at the bottom of the table (default true).
 
 `EscPosTableCell`:
 
@@ -216,16 +216,16 @@ Propiedades:
 - `align` ('left' | 'center' | 'right')
 - `bold` (boolean)
 
-## Ejemplo de tabla
+## Table example
 
 ```ts
 import { EscPosPage, EscPosPrinterType, EscPosTable, printer } from 'escpos';
 
 const table: EscPosTable = {
   header: [
-    { text: 'Producto', align: 'left' },
-    { text: 'Cant', align: 'center' },
-    { text: 'Precio', align: 'right' },
+    { text: 'Product', align: 'left' },
+    { text: 'Qty', align: 'center' },
+    { text: 'Price', align: 'right' },
   ],
   headerBold: true,
   columnWidths: [60, 20, 20],
@@ -253,27 +253,27 @@ const page: EscPosPage = {
 })();
 ```
 
-## Notas
+## Notes
 
-- `printer` debe coincidir con el nombre del sistema (CUPS o Windows).
-- En imagenes puedes ajustar `threshold` para oscurecer o aclarar.
-- QR y barcode usan imagenes raster; si fallan, se imprime texto de respaldo.
+- `printer` must match the system printer name (CUPS or Windows).
+- For images, adjust `threshold` to darken or lighten the output.
+- QR codes and barcodes use raster images; if generation fails, text is printed as a fallback.
 
 ## Troubleshooting
 
-- Texto con caracteres raros: ajusta `codeTable` segun la pagina de codigos de tu impresora.
-- Impresion muy clara: baja `threshold` en imagenes o usa `bold` en texto.
-- No imprime en Windows: confirma que el nombre de la impresora coincide y que PowerShell esta disponible.
-- No imprime en macOS/Linux: confirma `lpstat -p` y que CUPS este activo.
-- En Windows, si PowerShell bloquea la ejecucion, abre una consola como administrador y permite scripts con:
+- Strange characters in text: adjust `codeTable` to match your printer's code page.
+- Very light print: lower `threshold` on images or use `bold` on text.
+- Not printing on Windows: confirm the printer name matches and that PowerShell is available.
+- Not printing on macOS/Linux: confirm `lpstat -p` and that CUPS is active.
+- On Windows, if PowerShell blocks execution, open a console as administrator and allow scripts with:
   `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
-- Para evitar cambiar la policy global, puedes ejecutar la app con:
-  `powershell -ExecutionPolicy Bypass -File tu-script.ps1`
-- Para revertir la policy del usuario actual:
+- To avoid changing the global policy, you can run the app with:
+  `powershell -ExecutionPolicy Bypass -File your-script.ps1`
+- To revert the current user's policy:
   `Set-ExecutionPolicy -ExecutionPolicy Undefined -Scope CurrentUser`
-- Nota de seguridad: evita usar `Bypass` en produccion salvo que conozcas el impacto.
+- Security note: avoid using `Bypass` in production unless you understand the implications.
 
-## Desarrollo
+## Development
 
 ```bash
 npm run lint
@@ -281,6 +281,6 @@ npm run format
 npm test
 ```
 
-## Licencia
+## License
 
 MIT

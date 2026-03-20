@@ -7,14 +7,17 @@ import { EscPosPage } from './src/core/page/EscPosPage';
 import { printer } from './src/index';
 
 const page = {
-  printer: 'Printer_POS_80',
+  printer: '_192_168_1_250',
   printerType: 'USB',
   paperSize: 80,
   content: [
     {
       src: './src/assets/img/logo_empresa.png',
+      align: 'center',
+      width: 300,
+      height: 50,
     },
-    {
+    /*{
       text: 'Tienda "La Abejita Feliz año á"',
       align: 'center',
     },
@@ -41,7 +44,7 @@ const page = {
     },
     {
       charLine: '*',
-    },
+    },*/
   ],
 } as EscPosPage;
 

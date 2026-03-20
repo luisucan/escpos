@@ -185,15 +185,29 @@ export class EscPosPageBuilder {
 
   private async addImage(itemImg: EscPosImage): Promise<void> {
     const threshold = itemImg.threshold ?? 160;
+    const alignment = itemImg.align || 'left';
 
     const img = await Jimp.read(itemImg.src as string);
 
-    img.resize(this.MAX_WIDTH, Jimp.AUTO);
+    // Determine target dimensions
+    const targetWidth = Math.min(itemImg.width ?? this.MAX_WIDTH, this.MAX_WIDTH);
+    const targetHeight = itemImg.height ?? Jimp.AUTO;
+
+    img.resize(targetWidth, targetHeight);
     img.grayscale().contrast(0.5);
 
     const width = img.bitmap.width;
     const height = img.bitmap.height;
-    const bytesPerLine = Math.ceil(width / 8);
+    const bytesPerLine = Math.ceil(this.MAX_WIDTH / 8);
+
+    // Calculate horizontal offset based on alignment
+    let offsetX = 0;
+    if (alignment === 'center') {
+      offsetX = Math.floor((this.MAX_WIDTH - width) / 2);
+    } else if (alignment === 'right') {
+      offsetX = this.MAX_WIDTH - width;
+    }
+    offsetX = Math.max(0, offsetX);
 
     this.esc_pos.push(EscPosCommands.printImage(bytesPerLine, height));
 
@@ -205,8 +219,9 @@ export class EscPosPageBuilder {
 
         for (let b = 0; b < 8; b++) {
           const px = x * 8 + b;
-          if (px < width) {
-            const pixel = Jimp.intToRGBA(img.getPixelColor(px, y));
+          const imgPx = px - offsetX;
+          if (imgPx >= 0 && imgPx < width) {
+            const pixel = Jimp.intToRGBA(img.getPixelColor(imgPx, y));
             const lum = (pixel.r + pixel.g + pixel.b) / 3;
             byte = (byte << 1) | (lum < threshold ? 1 : 0);
           } else {
