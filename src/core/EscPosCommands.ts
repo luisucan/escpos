@@ -152,18 +152,19 @@ export class EscPosCommands {
     };
 
     const barcodeType = barcodeTypes[type] || 0x49; // Default to CODE128
-    const dataBuffer = Buffer.from(data, 'ascii');
 
-    // GS k m n d1...dn (for types 0-6)
-    // GS k m d1...dn NUL (for types 65+)
+    // Without a {B subset prefix, CODE128 defaults to Code Set A which only supports uppercase.
+    // Uppercase the data so lowercase content (e.g. UUIDs) encodes correctly.
+    const encodedData = barcodeType === 0x49 ? data.toUpperCase() : data;
+    const dataBuffer = Buffer.from(encodedData, 'ascii');
+
+    // ESC/POS GS k has two function formats:
+    // Function 1 (m = 0x00–0x06): GS k m d1...dk NUL  — NUL terminated
+    // Function 2 (m = 0x41–0x49): GS k m n d1...dn    — length byte before data, no NUL
     if (barcodeType < 0x41) {
-      return Buffer.concat([Buffer.from([0x1d, 0x6b, barcodeType, dataBuffer.length]), dataBuffer]);
+      return Buffer.concat([Buffer.from([0x1d, 0x6b, barcodeType]), dataBuffer, Buffer.from([0x00])]);
     } else {
-      return Buffer.concat([
-        Buffer.from([0x1d, 0x6b, barcodeType]),
-        dataBuffer,
-        Buffer.from([0x00]), // NULL terminator
-      ]);
+      return Buffer.concat([Buffer.from([0x1d, 0x6b, barcodeType, dataBuffer.length]), dataBuffer]);
     }
   }
 }

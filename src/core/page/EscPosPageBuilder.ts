@@ -12,7 +12,6 @@ import {
 
 import Jimp from 'jimp';
 import QRCode from 'qrcode';
-import bwipjs from 'bwip-js';
 
 export class EscPosPageBuilder {
   private MAX_WIDTH;
@@ -300,90 +299,14 @@ export class EscPosPageBuilder {
     this.esc_pos.push(EscPosCommands.align('left'));
   }
 
-  private async addBarcode(itemBarcode: EscPosBarcode): Promise<void> {
-    // Set alignment (default center)
-    const alignment = itemBarcode.align || 'center';
-    this.esc_pos.push(EscPosCommands.align(alignment));
-
-    try {
-      // Map barcode types to bwip-js symbology names
-      const barcodeTypeMap: { [key: string]: string } = {
-        'UPC-A': 'upca',
-        'UPC-E': 'upce',
-        EAN13: 'ean13',
-        EAN8: 'ean8',
-        CODE39: 'code39',
-        ITF: 'interleaved2of5',
-        CODABAR: 'codabar',
-        CODE93: 'code93',
-        CODE128: 'code128',
-      };
-
-      const barcodeType = barcodeTypeMap[itemBarcode.type] || 'code128';
-      const height = itemBarcode.height || 162;
-      const width = itemBarcode.width || 3;
-
-      // Generate barcode as PNG buffer
-      const barcodeBuffer = await bwipjs.toBuffer({
-        bcid: barcodeType,
-        text: itemBarcode.barcodeContent,
-        scale: width,
-        height: Math.floor(height / 10), // Convert dots to mm approximation
-        includetext: itemBarcode.textPosition !== 'none',
-        textxalign: 'center',
-      });
-
-      // Load barcode image with Jimp
-      const img = await Jimp.read(barcodeBuffer);
-
-      // Ensure it fits the paper width
-      if (img.bitmap.width > this.MAX_WIDTH) {
-        img.resize(this.MAX_WIDTH, Jimp.AUTO);
-      }
-
-      img.grayscale();
-
-      const imgWidth = img.bitmap.width;
-      const imgHeight = img.bitmap.height;
-      const bytesPerLine = Math.ceil(imgWidth / 8);
-
-      // Add image header command
-      this.esc_pos.push(EscPosCommands.printImage(bytesPerLine, imgHeight));
-      const imageData: number[] = [];
-
-      for (let y = 0; y < imgHeight; y++) {
-        for (let x = 0; x < bytesPerLine; x++) {
-          let byte = 0;
-
-          for (let b = 0; b < 8; b++) {
-            const px = x * 8 + b;
-            if (px < imgWidth) {
-              const pixel = Jimp.intToRGBA(img.getPixelColor(px, y));
-              const lum = (pixel.r + pixel.g + pixel.b) / 3;
-
-              // Inverted logic: white (255) = 0, black (0) = 1
-              byte = (byte << 1) | (lum > 128 ? 0 : 1);
-            } else {
-              byte = byte << 1;
-            }
-          }
-
-          imageData.push(byte);
-        }
-      }
-
-      // Add the image data as a buffer
-      this.esc_pos.push(Buffer.from(imageData));
-
-      // Add line feed after barcode
-      this.esc_pos.push(EscPosCommands.lineFeed(1));
-    } catch (error) {
-      console.error('Error generating barcode:', error);
-      // Fallback: print barcode content as text if image generation fails
-      this.esc_pos.push(EscPosCommands.text(`Barcode: ${itemBarcode.barcodeContent}\n`));
-    }
-
-    // Reset alignment to left after barcode
+  private addBarcode(itemBarcode: EscPosBarcode): void {
+    this.esc_pos.push(EscPosCommands.align(itemBarcode.align || 'center'));
+    this.esc_pos.push(EscPosCommands.barcodeHeight(itemBarcode.height || 162));
+    this.esc_pos.push(EscPosCommands.barcodeWidth(itemBarcode.width || 3));
+    this.esc_pos.push(EscPosCommands.barcodeTextPosition(itemBarcode.textPosition || 'below'));
+    this.esc_pos.push(EscPosCommands.barcodeFont('A'));
+    this.esc_pos.push(EscPosCommands.barcodePrint(itemBarcode.type || 'CODE128', itemBarcode.barcodeContent));
+    this.esc_pos.push(EscPosCommands.lineFeed(1));
     this.esc_pos.push(EscPosCommands.align('left'));
   }
 
@@ -516,7 +439,7 @@ export class EscPosPageBuilder {
       }
 
       if ('barcodeContent' in item) {
-        await this.addBarcode(item);
+        this.addBarcode(item);
       }
 
       if ('rows' in item) {

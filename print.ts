@@ -12,12 +12,19 @@ const page = {
   paperSize: 80,
   content: [
     {
+      barcodeContent: '018F0F64-8C8C-7C3A-BC4D-5C1B2D7F9A21',
+      type: 'CODE128',
+      align: 'center',
+      height: 80,
+      textPosition: 'below',
+    }
+    /*{
       src: './src/assets/img/logo_empresa.png',
       align: 'center',
       width: 300,
       height: 50,
     },
-    /*{
+    {
       text: 'Tienda "La Abejita Feliz año á"',
       align: 'center',
     },

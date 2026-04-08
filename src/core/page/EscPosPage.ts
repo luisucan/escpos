@@ -40,7 +40,7 @@ export interface EscPosLineBreak {
 
 export interface EscPosBarcode {
   barcodeContent: string;
-  type: 'UPC-A' | 'UPC-E' | 'EAN13' | 'EAN8' | 'CODE39' | 'ITF' | 'CODABAR' | 'CODE93' | 'CODE128';
+  type?: 'UPC-A' | 'UPC-E' | 'EAN13' | 'EAN8' | 'CODE39' | 'ITF' | 'CODABAR' | 'CODE93' | 'CODE128';
   height?: number;
   width?: number;
   textPosition?: 'none' | 'above' | 'below' | 'both';
