@@ -158,16 +158,37 @@ Properties:
 
 ### Barcode (`EscPosBarcode`)
 
-Generates a barcode with `bwip-js` and prints it as an image.
+Sends native ESC/POS barcode commands (`GS k`) directly to the printer.
 
 Properties:
 
-- `barcodeContent` (string): data.
-- `type` ('UPC-A' | 'UPC-E' | 'EAN13' | 'EAN8' | 'CODE39' | 'ITF' | 'CODABAR' | 'CODE93' | 'CODE128').
+- `barcodeContent` (string): data to encode.
+- `type` ('UPC-A' | 'UPC-E' | 'EAN13' | 'EAN8' | 'CODE39' | 'ITF' | 'CODABAR' | 'CODE93' | 'CODE128'): optional, defaults to `CODE128`.
 - `height` (number): height in dots (default 162).
-- `width` (number): relative width (default 3).
-- `textPosition` ('none' | 'above' | 'below' | 'both').
+- `width` (number): module width 2–6 (default 3). Use `2` for longer codes.
+- `textPosition` ('none' | 'above' | 'below' | 'both'): HRI text position (default 'below').
 - `align` ('left' | 'center' | 'right').
+
+**Character limits per paper size** (CODE128):
+
+| `width` | 80mm (~576 dots) | 58mm (~384 dots) |
+|---------|-----------------|-----------------|
+| 2       | ~22 chars        | ~13 chars        |
+| 3       | ~13 chars        | ~7 chars         |
+
+> For data longer than ~22 characters (e.g. UUIDs), use `EscPosQrCode` instead.
+
+Example:
+
+```ts
+{
+  barcodeContent: 'C-123456789012',
+  type: 'CODE128',
+  align: 'center',
+  width: 2,
+  textPosition: 'below',
+}
+```
 
 ### Separator line (`EscPosLineBreak`)
 
@@ -257,7 +278,8 @@ const page: EscPosPage = {
 
 - `printer` must match the system printer name (CUPS or Windows).
 - For images, adjust `threshold` to darken or lighten the output.
-- QR codes and barcodes use raster images; if generation fails, text is printed as a fallback.
+- Barcodes use native ESC/POS commands (`GS k`) — no image rendering involved.
+- QR codes are rendered as raster images; if generation fails, text is printed as a fallback.
 
 ## Troubleshooting
 

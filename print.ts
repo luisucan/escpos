@@ -12,7 +12,7 @@ const page = {
   paperSize: 80,
   content: [
     {
-      barcodeContent: '018F0F64-8C8C-7C3A-BC4D-5C1B2D7F9A21',
+      barcodeContent: 'COT POKEA 0001',
       type: 'CODE128',
       align: 'center',
       height: 80,
