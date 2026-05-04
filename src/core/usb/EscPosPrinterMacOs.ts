@@ -40,7 +40,7 @@ export class EscPosPrinterMacOs extends EscPosPrinterImpl {
 
   async getListPrinters(): Promise<PrinterInfo[]>{
     return new Promise((resolve, reject)=>{
-      execFile('/usr/bin/lpstat', ['-p'], (error, stdout)=>{
+      execFile('/usr/bin/lpstat', ['-p'], { env: { ...process.env, LANG: 'C', LC_ALL: 'C' } }, (error, stdout)=>{
         if(error){
           reject(error)
           return
