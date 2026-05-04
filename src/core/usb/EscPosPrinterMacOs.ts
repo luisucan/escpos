@@ -1,7 +1,7 @@
 import { EscPosPrinterImpl } from '../EscPosPrinterImp';
 import { EscPosPage } from '../page/EscPosPage';
 
-import { exec, execFile } from 'child_process';
+import { exec } from 'child_process';
 import { EscPosPageBuilder } from '../page/EscPosPageBuilder';
 import { PrinterInfo } from '../interfaces/PrinterInfo';
 
@@ -40,7 +40,7 @@ export class EscPosPrinterMacOs extends EscPosPrinterImpl {
 
   async getListPrinters(): Promise<PrinterInfo[]>{
     return new Promise((resolve, reject)=>{
-      execFile('/usr/bin/lpstat', ['-p'], { env: { ...process.env, LANG: 'C', LC_ALL: 'C' } }, (error, stdout)=>{
+      exec('LANG=C lpstat -p', (error, stdout)=>{
         if(error){
           reject(error)
           return
