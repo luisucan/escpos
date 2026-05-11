@@ -56,10 +56,27 @@ export class EscPosCommands {
   }
 
   // Print text
-  static text(content: string): Buffer {
-    // Most ESC/POS printers expect single-byte code pages (not UTF-8) for text mode.
-    // Default to CP437 for broad compatibility; callers can change the active table via ESC t.
-    return iconv.encode(content, 'cp437');
+  static text(content: string, encoding: string = 'cp437'): Buffer {
+    return iconv.encode(content, encoding);
+  }
+
+  // Maps ESC/POS code table number (ESC t n) to the iconv-lite charset name.
+  // For Spanish use codeTable 16 (cp1252) or 1 (cp850).
+  static codeTableToEncoding(codeTable: number): string {
+    const map: Record<number, string> = {
+      0:  'cp437',
+      1:  'cp850',
+      2:  'cp860',
+      3:  'cp863',
+      4:  'cp865',
+      16: 'cp1252',
+      17: 'cp866',
+      18: 'cp857',
+      19: 'cp858',
+      20: 'cp862',
+      21: 'cp874',
+    };
+    return map[codeTable] ?? 'cp437';
   }
 
   // Select character code table

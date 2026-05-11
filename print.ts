@@ -10,7 +10,14 @@ const page = {
   printer: '_192_168_1_250',
   printerType: 'USB',
   paperSize: 80,
+  codeTable: 16,      // tabla que envías a la impresora (ajusta según tu modelo)
+  encoding: 'cp1252', // encoding real del texto — cp850 o cp1252 soportan á é í ó ú
   content: [
+    {
+          "index": "forma_pago",
+          "align": "right",
+          "text": ">>> á é í ó ú Á É Í Ó Ú ñ Ñ ü"
+    },
     {
       section: [
         {
@@ -29,7 +36,12 @@ const page = {
           "text": "Cambio: $ {{cambio_monto}}"
         },
       ]
-    }
+    },
+    {
+          "index": "forma_pago",
+          "align": "right",
+          "text": "á é í ó ú Á É Í Ó Ú ñ Ñ ü"
+    },
     /*{
       barcodeContent: 'COT POKEA 0001',
       type: 'CODE128',
@@ -37,7 +49,7 @@ const page = {
       height: 80,
       textPosition: 'below',
     }*/
-    ,{
+    /*,{
       src: './src/assets/img/logo_empresa.png',
       align: 'center',
       width: 300,
@@ -70,7 +82,7 @@ const page = {
     },
     {
       charLine: '*',
-    },
+    },*/
   ],
 } as EscPosPage;
 

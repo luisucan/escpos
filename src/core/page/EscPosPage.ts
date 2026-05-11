@@ -91,9 +91,16 @@ export interface EscPosPage {
   printerType: EscPosPrinterType;
   paperSize: EscPosPaperSize;
   /**
-   * ESC/POS character code table (ESC t n). Defaults to 0 (CP437).
+   * ESC/POS character code table sent to the printer (ESC t n). Defaults to 0.
+   * Use the value that corresponds to a Latin/Spanish page in YOUR printer's manual.
    */
   codeTable?: number;
+  /**
+   * iconv-lite encoding used to encode text. Overrides the encoding derived from codeTable.
+   * Use this when your printer's table numbering differs from the standard Epson mapping.
+   * Common values for Spanish: 'cp850', 'cp1252', 'cp437'.
+   */
+  encoding?: string;
   /**
    * Key-value pairs for template interpolation. Values replace {{key}} placeholders in text content.
    */

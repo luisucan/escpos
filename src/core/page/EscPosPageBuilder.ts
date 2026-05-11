@@ -20,12 +20,14 @@ export class EscPosPageBuilder {
   private CHAR_WIDTH;
   private esc_pos: Buffer[];
   private data: Record<string, string>;
+  private encoding: string;
 
   private constructor(page: EscPosPage) {
     this.esc_pos = [];
     this.MAX_WIDTH = page.paperSize === 80 ? 576 : 384;
     this.CHAR_WIDTH = page.paperSize === 80 ? 48 : 32;
     this.data = page.data ?? {};
+    this.encoding = page.encoding ?? EscPosCommands.codeTableToEncoding(page.codeTable ?? 0);
   }
 
   private interpolate(text: string): string {
@@ -299,7 +301,7 @@ export class EscPosPageBuilder {
     } catch (error) {
       console.error('Error generating QR code:', error);
       // Fallback: print QR content as text if image generation fails
-      this.esc_pos.push(EscPosCommands.text(`QR: ${qr.qrContent}\n`));
+      this.esc_pos.push(EscPosCommands.text(`QR: ${qr.qrContent}\n`, this.encoding));
     }
 
     // Reset alignment to left after QR code
@@ -338,7 +340,7 @@ export class EscPosPageBuilder {
     if (!text.endsWith('\n')) {
       text += '\n';
     }
-    this.esc_pos.push(EscPosCommands.text(text));
+    this.esc_pos.push(EscPosCommands.text(text, this.encoding));
 
     // Reset formatting to defaults
     if (itemText.bold !== undefined) {
@@ -362,7 +364,7 @@ export class EscPosPageBuilder {
         line += char;
       }
       line += '\n';
-      this.esc_pos.push(EscPosCommands.text(line));
+      this.esc_pos.push(EscPosCommands.text(line, this.encoding));
     }
   }
 
@@ -395,13 +397,13 @@ export class EscPosPageBuilder {
 
       const headerLines = this.buildTableRowLines(header, widths, defaultAlign);
       for (const line of headerLines) {
-        this.esc_pos.push(EscPosCommands.text(`${line}\n`));
+        this.esc_pos.push(EscPosCommands.text(`${line}\n`, this.encoding));
       }
 
       this.esc_pos.push(EscPosCommands.bold(false));
 
       const separator = lineChar.repeat(this.CHAR_WIDTH);
-      this.esc_pos.push(EscPosCommands.text(`${separator}\n`));
+      this.esc_pos.push(EscPosCommands.text(`${separator}\n`, this.encoding));
     }
 
     for (const row of rows) {
@@ -410,7 +412,7 @@ export class EscPosPageBuilder {
 
       const rowLines = this.buildTableRowLines(row, widths, defaultAlign);
       for (const line of rowLines) {
-        this.esc_pos.push(EscPosCommands.text(`${line}\n`));
+        this.esc_pos.push(EscPosCommands.text(`${line}\n`, this.encoding));
       }
 
       this.esc_pos.push(EscPosCommands.bold(false));
@@ -422,7 +424,7 @@ export class EscPosPageBuilder {
 
     if (footerLine) {
       const separator = lineChar.repeat(this.CHAR_WIDTH);
-      this.esc_pos.push(EscPosCommands.text(`${separator}\n`));
+      this.esc_pos.push(EscPosCommands.text(`${separator}\n`, this.encoding));
     }
 
     this.esc_pos.push(EscPosCommands.align('left'));
