@@ -36,8 +36,8 @@ const page = {
       align: 'center',
       height: 80,
       textPosition: 'below',
-    }
-    {
+    }*/
+    ,{
       src: './src/assets/img/logo_empresa.png',
       align: 'center',
       width: 300,
@@ -70,7 +70,7 @@ const page = {
     },
     {
       charLine: '*',
-    },*/
+    },
   ],
 } as EscPosPage;
 

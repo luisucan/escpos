@@ -1,6 +1,7 @@
 import { EscPosCommands } from '../EscPosCommands';
 import {
   EscPosBarcode,
+  EscPosContentItem,
   EscPosImage,
   EscPosLineBreak,
   EscPosPage,
@@ -18,11 +19,17 @@ export class EscPosPageBuilder {
   private MAX_WIDTH;
   private CHAR_WIDTH;
   private esc_pos: Buffer[];
+  private data: Record<string, string>;
 
   private constructor(page: EscPosPage) {
     this.esc_pos = [];
     this.MAX_WIDTH = page.paperSize === 80 ? 576 : 384;
     this.CHAR_WIDTH = page.paperSize === 80 ? 48 : 32;
+    this.data = page.data ?? {};
+  }
+
+  private interpolate(text: string): string {
+    return text.replace(/\{\{(\w+)\}\}/g, (_, key) => this.data[key] ?? '');
   }
 
   private normalizePercentages(percentages: number[]): number[] {
@@ -237,8 +244,7 @@ export class EscPosPageBuilder {
   }
 
   private async addQrCode(qr: EscPosQrCode): Promise<void> {
-    // Set alignment (default center)
-    const alignment = qr.alignment || 'center';
+    const alignment = qr.align || 'center';
     this.esc_pos.push(EscPosCommands.align(alignment));
 
     try {
@@ -328,7 +334,7 @@ export class EscPosPageBuilder {
     }
 
     // Add text
-    let text = itemText.text;
+    let text = this.interpolate(itemText.text);
     if (!text.endsWith('\n')) {
       text += '\n';
     }
@@ -360,9 +366,9 @@ export class EscPosPageBuilder {
     }
   }
 
-  private addSection(section: EscPosSection): void {
+  private async addSection(section: EscPosSection): Promise<void> {
     for (const item of section.section) {
-      this.addText(item);
+      await this.processItem(item);
     }
   }
 
@@ -422,59 +428,54 @@ export class EscPosPageBuilder {
     this.esc_pos.push(EscPosCommands.align('left'));
   }
 
-  private async initialize(page: EscPosPage): Promise<void> {
-    // No initialize command to avoid spacing at the start
-
-    // Default to CP437 for Spanish accents (\u00d1/\u00f1, \u00dc/\u00fc, \u00c1...)
-    // and general printer compatibility.
-    this.esc_pos.push(EscPosCommands.selectCodeTable(page.codeTable ?? 0));
-
-    // Initialize ESC/POS commands
-    for (const item of page.content) {
-      // Process each item in the page content
-      // For example, handle text, images, etc.
-      if ('text' in item) {
-        this.addText(item);
-      }
-
-      if ('src' in item) {
-        await this.addImage(item);
-      }
-
-      if ('qrContent' in item) {
-        await this.addQrCode(item);
-      }
-
-      if ('barcodeContent' in item) {
-        this.addBarcode(item);
-      }
-
-      if ('rows' in item) {
-        this.addTable(item as EscPosTable);
-      }
-
-      if ('section' in item) {
-        this.addSection(item as EscPosSection);
-      }
-
-      if ('charLine' in item) {
-        await this.addLineBreak(item);
-      }
-
-      if ('cut' in item && item.cut) {
-        this.esc_pos.push(EscPosCommands.printAndFeed(item.feedLines || 5));
-        this.esc_pos.push(EscPosCommands.cut());
-      }
-
-      if ('openDrawer' in item && item.openDrawer) {
-        this.esc_pos.push(EscPosCommands.openDrawer());
-      }
+  private async processItem(item: EscPosContentItem): Promise<void> {
+    if ('text' in item) {
+      this.addText(item);
     }
 
-    //if last item is not cut, add a cut at the end
+    if ('src' in item) {
+      await this.addImage(item);
+    }
+
+    if ('qrContent' in item) {
+      await this.addQrCode(item);
+    }
+
+    if ('barcodeContent' in item) {
+      this.addBarcode(item);
+    }
+
+    if ('rows' in item) {
+      this.addTable(item as EscPosTable);
+    }
+
+    if ('section' in item) {
+      await this.addSection(item as EscPosSection);
+    }
+
+    if ('charLine' in item) {
+      await this.addLineBreak(item);
+    }
+
+    if ('cut' in item && item.cut) {
+      this.esc_pos.push(EscPosCommands.printAndFeed(item.feedLines || 5));
+      this.esc_pos.push(EscPosCommands.cut());
+    }
+
+    if ('openDrawer' in item && item.openDrawer) {
+      this.esc_pos.push(EscPosCommands.openDrawer());
+    }
+  }
+
+  private async initialize(page: EscPosPage): Promise<void> {
+    this.esc_pos.push(EscPosCommands.selectCodeTable(page.codeTable ?? 0));
+
+    for (const item of page.content) {
+      await this.processItem(item);
+    }
+
     const lastItem = page.content[page.content.length - 1];
     if (!('cut' in lastItem) || ('cut' in lastItem && !lastItem.cut)) {
-      // Reduce feed before cutting from 5 to 2 lines
       this.esc_pos.push(EscPosCommands.printAndFeed(5));
       this.esc_pos.push(EscPosCommands.cut());
     }

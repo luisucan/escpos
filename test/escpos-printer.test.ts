@@ -287,4 +287,4 @@ describe('EscPosPrinter', () => {
     });
   });
 });
-*/
+*/test.todo('EscPosPrinter integration tests — requires real printer');

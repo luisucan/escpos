@@ -15,6 +15,8 @@ export type { EscPosPrinter } from './core/EscPostPrinter';
 export type { PrinterInfo } from './core/interfaces/PrinterInfo';
 export type {
   EscPosBarcode,
+  EscPosCut,
+  EscPosContentItem,
   EscPosImage,
   EscPosLineBreak,
   EscPosOpenDrawer,
@@ -26,6 +28,8 @@ export type {
   EscPosTable,
   EscPosTableCell,
   EscPosText,
+  /** @deprecated Use EscPosCut */
+  EscPostCut,
 } from './core/page/EscPosPage';
 export { EscPosPrinterType } from './core/page/EscPosPage';
 

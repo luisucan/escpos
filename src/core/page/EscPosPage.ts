@@ -1,4 +1,8 @@
-export interface EscPosText {
+interface EscPosBase {
+  index?: string;
+}
+
+export interface EscPosText extends EscPosBase {
   text: string;
   bold?: boolean;
   size?: {
@@ -8,7 +12,7 @@ export interface EscPosText {
   align?: 'left' | 'center' | 'right';
 }
 
-export interface EscPosImage {
+export interface EscPosImage extends EscPosBase {
   src: string;
   type: 'local' | 'url';
   threshold?: number; // 0–255
@@ -17,28 +21,31 @@ export interface EscPosImage {
   align?: 'left' | 'center' | 'right';
 }
 
-export interface EscPostCut {
+/** @deprecated Use EscPosCut instead */
+export type EscPostCut = EscPosCut;
+
+export interface EscPosCut extends EscPosBase {
   cut: boolean;
   feedLines?: number;
 }
 
-export interface EscPosOpenDrawer {
+export interface EscPosOpenDrawer extends EscPosBase {
   openDrawer: boolean;
 }
 
-export interface EscPosQrCode {
+export interface EscPosQrCode extends EscPosBase {
   qrContent: string;
-  alignment?: 'left' | 'center' | 'right';
+  align?: 'left' | 'center' | 'right';
   size?: number;
   errorLevel?: 'L' | 'M' | 'Q' | 'H';
 }
 
-export interface EscPosLineBreak {
-  lines: number;
+export interface EscPosLineBreak extends EscPosBase {
+  lines?: number;
   charLine: string;
 }
 
-export interface EscPosBarcode {
+export interface EscPosBarcode extends EscPosBase {
   barcodeContent: string;
   type?: 'UPC-A' | 'UPC-E' | 'EAN13' | 'EAN8' | 'CODE39' | 'ITF' | 'CODABAR' | 'CODE93' | 'CODE128';
   height?: number;
@@ -47,12 +54,22 @@ export interface EscPosBarcode {
   align?: 'left' | 'center' | 'right';
 }
 
-export interface EscPosSectionItem extends EscPosText {
-  index?: string;
-}
+export type EscPosContentItem =
+  | EscPosText
+  | EscPosImage
+  | EscPosQrCode
+  | EscPosBarcode
+  | EscPosLineBreak
+  | EscPosCut
+  | EscPosOpenDrawer
+  | EscPosTable
+  | EscPosSection;
 
-export interface EscPosSection {
-  section: EscPosSectionItem[];
+/** @deprecated index is now part of EscPosText directly */
+export type EscPosSectionItem = EscPosText;
+
+export interface EscPosSection extends EscPosBase {
+  section: EscPosContentItem[];
 }
 
 export interface EscPosTableCell {
@@ -77,20 +94,14 @@ export interface EscPosPage {
    * ESC/POS character code table (ESC t n). Defaults to 0 (CP437).
    */
   codeTable?: number;
-  content: (
-    | EscPosText
-    | EscPosImage
-    | EscPosQrCode
-    | EscPosBarcode
-    | EscPosLineBreak
-    | EscPostCut
-    | EscPosOpenDrawer
-    | EscPosTable
-    | EscPosSection
-  )[];
+  /**
+   * Key-value pairs for template interpolation. Values replace {{key}} placeholders in text content.
+   */
+  data?: Record<string, string>;
+  content: EscPosContentItem[];
 }
 
-export interface EscPosTable {
+export interface EscPosTable extends EscPosBase {
   header?: EscPosTableCell[];
   headerBold?: boolean;
   rows: EscPosTableCell[][];
