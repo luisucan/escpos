@@ -21,6 +21,8 @@ export type {
   EscPosPage,
   EscPosPaperSize,
   EscPosQrCode,
+  EscPosSection,
+  EscPosSectionItem,
   EscPosTable,
   EscPosTableCell,
   EscPosText,

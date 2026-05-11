@@ -47,6 +47,14 @@ export interface EscPosBarcode {
   align?: 'left' | 'center' | 'right';
 }
 
+export interface EscPosSectionItem extends EscPosText {
+  index?: string;
+}
+
+export interface EscPosSection {
+  section: EscPosSectionItem[];
+}
+
 export interface EscPosTableCell {
   text: string;
   align?: 'left' | 'center' | 'right';
@@ -78,6 +86,7 @@ export interface EscPosPage {
     | EscPostCut
     | EscPosOpenDrawer
     | EscPosTable
+    | EscPosSection
   )[];
 }
 

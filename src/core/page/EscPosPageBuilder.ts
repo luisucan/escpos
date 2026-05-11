@@ -5,6 +5,7 @@ import {
   EscPosLineBreak,
   EscPosPage,
   EscPosQrCode,
+  EscPosSection,
   EscPosTable,
   EscPosTableCell,
   EscPosText,
@@ -359,6 +360,12 @@ export class EscPosPageBuilder {
     }
   }
 
+  private addSection(section: EscPosSection): void {
+    for (const item of section.section) {
+      this.addText(item);
+    }
+  }
+
   private addTable(table: EscPosTable): void {
     const header = table.header || [];
     const rows = table.rows || [];
@@ -444,6 +451,10 @@ export class EscPosPageBuilder {
 
       if ('rows' in item) {
         this.addTable(item as EscPosTable);
+      }
+
+      if ('section' in item) {
+        this.addSection(item as EscPosSection);
       }
 
       if ('charLine' in item) {

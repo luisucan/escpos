@@ -12,13 +12,32 @@ const page = {
   paperSize: 80,
   content: [
     {
+      section: [
+        {
+          "index": "forma_pago",
+          "align": "right",
+          "text": "Forma Pago: $ {{forma_pago}}"
+        },
+        {
+          "index": "recibe_monto",
+          "align": "right",
+          "text": "Recibe: $ {{recibe_monto}}"
+        },
+        {
+          "index": "cambio_monto",
+          "align": "right",
+          "text": "Cambio: $ {{cambio_monto}}"
+        },
+      ]
+    }
+    /*{
       barcodeContent: 'COT POKEA 0001',
       type: 'CODE128',
       align: 'center',
       height: 80,
       textPosition: 'below',
     }
-    /*{
+    {
       src: './src/assets/img/logo_empresa.png',
       align: 'center',
       width: 300,

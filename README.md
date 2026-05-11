@@ -216,6 +216,47 @@ Properties:
 
 - `openDrawer` (boolean).
 
+### Section (`EscPosSection`)
+
+Groups an array of text items into a single content element. Useful when you want to keep related lines together (e.g. a payment summary block) as a named unit in your data model.
+
+Properties:
+
+- `section` (EscPosSectionItem[]): list of text items to print in order.
+
+`EscPosSectionItem` extends `EscPosText` with:
+
+- `index` (string, optional): identifier for the item — used to map template placeholders in the caller's data layer, not printed.
+- `text` (string): content (supports `{{placeholder}}` patterns in your own rendering layer).
+- `bold` (boolean, optional).
+- `size` ({ width, height }, optional).
+- `align` ('left' | 'center' | 'right', optional).
+
+Example:
+
+```ts
+import { EscPosPage, EscPosPrinterType, EscPosSection, printer } from 'escpos';
+
+const paymentSection: EscPosSection = {
+  section: [
+    { index: 'forma_pago',   align: 'right', text: 'Forma Pago: $ 500.00' },
+    { index: 'recibe_monto', align: 'right', text: 'Recibe: $ 500.00' },
+    { index: 'cambio_monto', align: 'right', text: 'Cambio: $ 0.00' },
+  ],
+};
+
+const page: EscPosPage = {
+  printer: 'Printer_POS_80',
+  printerType: EscPosPrinterType.USB,
+  paperSize: 80,
+  content: [paymentSection],
+};
+
+(async () => {
+  await printer.print(page);
+})();
+```
+
 ### Table (`EscPosTable`)
 
 Prints rows with aligned columns.
