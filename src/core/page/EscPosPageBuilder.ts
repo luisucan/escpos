@@ -357,14 +357,30 @@ export class EscPosPageBuilder {
   private async addLineBreak(itemBreak: EscPosLineBreak): Promise<void> {
     const lines = itemBreak.lines || 1;
     const char = itemBreak.charLine || ' ';
+    const text = itemBreak.text ?? '';
+    const align = itemBreak.align ?? 'center';
 
     for (let i = 0; i < lines; i++) {
-      let line = '';
-      for (let j = 0; j < this.CHAR_WIDTH; j++) {
-        line += char;
+      let line: string;
+
+      if (text.length === 0) {
+        line = char.repeat(this.CHAR_WIDTH);
+      } else {
+        const label = ` ${text} `;
+        const remaining = Math.max(0, this.CHAR_WIDTH - label.length);
+
+        if (align === 'left') {
+          line = label + char.repeat(remaining);
+        } else if (align === 'right') {
+          line = char.repeat(remaining) + label;
+        } else {
+          const leftPad = Math.floor(remaining / 2);
+          const rightPad = remaining - leftPad;
+          line = char.repeat(leftPad) + label + char.repeat(rightPad);
+        }
       }
-      line += '\n';
-      this.esc_pos.push(EscPosCommands.text(line, this.encoding));
+
+      this.esc_pos.push(EscPosCommands.text(line + '\n', this.encoding));
     }
   }
 
@@ -431,6 +447,11 @@ export class EscPosPageBuilder {
   }
 
   private async processItem(item: EscPosContentItem): Promise<void> {
+    if ('charLine' in item) {
+      await this.addLineBreak(item);
+      return;
+    }
+
     if ('text' in item) {
       this.addText(item);
     }
@@ -453,10 +474,6 @@ export class EscPosPageBuilder {
 
     if ('section' in item) {
       await this.addSection(item as EscPosSection);
-    }
-
-    if ('charLine' in item) {
-      await this.addLineBreak(item);
     }
 
     if ('cut' in item && item.cut) {

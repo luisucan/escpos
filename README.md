@@ -192,12 +192,34 @@ Example:
 
 ### Separator line (`EscPosLineBreak`)
 
-Prints one or more lines with a repeated character.
+Prints one or more lines with a repeated character. Optionally embeds a label inside the line.
 
 Properties:
 
 - `lines` (number): number of lines.
 - `charLine` (string): character to repeat.
+- `text` (string, optional): label to embed inside the separator line.
+- `align` (`'left' | 'center' | 'right'`, optional): position of the label. Defaults to `'center'`.
+
+Examples:
+
+```ts
+// Full separator — no text
+{ charLine: '-' }
+// ------------------------------------------------
+
+// Centered label (default)
+{ charLine: '-', text: 'Totales' }
+// --------------------Totales---------------------
+
+// Left-aligned label
+{ charLine: '-', text: 'Totales', align: 'left' }
+// Totales -----------------------------------------
+
+// Right-aligned label
+{ charLine: '-', text: 'Totales', align: 'right' }
+// ----------------------------------------- Totales
+```
 
 ### Cut (`EscPostCut`)
 

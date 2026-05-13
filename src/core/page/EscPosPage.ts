@@ -43,6 +43,8 @@ export interface EscPosQrCode extends EscPosBase {
 export interface EscPosLineBreak extends EscPosBase {
   lines?: number;
   charLine: string;
+  text?: string;
+  align?: 'left' | 'center' | 'right';
 }
 
 export interface EscPosBarcode extends EscPosBase {

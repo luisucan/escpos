@@ -19,6 +19,28 @@ const page = {
           "text": ">>> á é í ó ú Á É Í Ó Ú ñ Ñ ü"
     },
     {
+      "charLine": "-",
+      "lines": 1,
+      "text": "Totales",
+      "align": "left"
+    },
+    {
+      "charLine": "-",
+      "lines": 1,
+      "text": "Totales",
+      "align": "center"
+    },
+    {
+      "charLine": "-",
+      "lines": 1,
+      "text": "Totales",
+      "align": "right"
+    },
+    {
+      "charLine": "-",
+      "lines": 1
+    },
+    {
       section: [
         {
           "index": "forma_pago",
